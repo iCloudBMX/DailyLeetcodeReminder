@@ -5,11 +5,11 @@ VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DailyLeetcodeReminder.Core", "src\DailyLeetcodeReminder.Core\DailyLeetcodeReminder.Core.csproj", "{3712C1A0-23DD-4848-BEF9-EAD13692FA63}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DailyLeetcodeReminder.Domain", "DailyLeetcodeReminder.Domain\DailyLeetcodeReminder.Domain.csproj", "{80E616F8-983E-44F2-8B88-5A992175D924}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DailyLeetcodeReminder.Domain", "src\DailyLeetcodeReminder.Domain\DailyLeetcodeReminder.Domain.csproj", "{80E616F8-983E-44F2-8B88-5A992175D924}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DailyLeetcodeReminder.Infrastructure", "DailyLeetcodeReminder.Infrastructure\DailyLeetcodeReminder.Infrastructure.csproj", "{F7135F41-3617-41B0-9C15-AB6362076743}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DailyLeetcodeReminder.Infrastructure", "src\DailyLeetcodeReminder.Infrastructure\DailyLeetcodeReminder.Infrastructure.csproj", "{F7135F41-3617-41B0-9C15-AB6362076743}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DailyLeetcodeReminder.Application", "DailyLeetcodeReminder.Application\DailyLeetcodeReminder.Application.csproj", "{F54E4A91-E131-46ED-8C43-9EDCFF170E79}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DailyLeetcodeReminder.Application", "src\DailyLeetcodeReminder.Application\DailyLeetcodeReminder.Application.csproj", "{F54E4A91-E131-46ED-8C43-9EDCFF170E79}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
