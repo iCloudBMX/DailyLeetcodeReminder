@@ -1,0 +1,80 @@
+﻿using DailyLeetcodeReminder.Domain.Entities;
+using DailyLeetcodeReminder.Infrastructure.Repositories;
+using DailyLeetcodeReminder.Infrastructure.Services;
+
+namespace DailyLeetcodeReminder.Application.Services;
+
+public class ChallengerService : IChallengerService
+{
+    private readonly IChallengerRepository challengerRepository;
+    private readonly ILeetCodeDataExtractorService leetCodeDataExtractorService;
+    private const short maxAttempts = 3;
+
+    public ChallengerService(
+        IChallengerRepository userRepository,
+        ILeetCodeDataExtractorService leetCodeDataExtractorService)
+    {
+        this.challengerRepository = userRepository;
+        this.leetCodeDataExtractorService = leetCodeDataExtractorService;
+    }
+
+    public async Task<Challenger> AddUserAsync(Challenger challenger)
+    {
+        challenger.Attempts = maxAttempts;
+
+        challenger.TotalSolvedProblems = await leetCodeDataExtractorService
+            .ExtractSolvedProblemsCountAsync(challenger.LeetcodeUserName);
+
+        Challenger insertedChallenger = await this.challengerRepository
+            .InsertChallengerAsync(challenger);
+
+        return insertedChallenger;
+    }
+
+    public async Task<Challenger> RetrieveChallengerByTelegramIdAsync(long telegramId)
+    {
+        Challenger storageChallenger = await this.challengerRepository
+            .SelectUserByTelegramIdAsync(telegramId);
+
+        if(storageChallenger is null)
+        {
+            throw new Exception("Challenger is not found");
+        }
+
+        return storageChallenger;
+    }
+
+    public async Task<Challenger> RetrieveChallengerByLeetcodeUsernameAsync(string leetcodeUsername)
+    {
+        Challenger storageChallenger = await this.challengerRepository
+            .SelectUserByLeetcodeUsernameAsync(leetcodeUsername);
+
+        if (storageChallenger is null)
+        {
+            throw new Exception("Challenger is not found");
+        }
+
+        return storageChallenger;
+    }
+
+    public async Task<Challenger> ModifyChallengerAsync(Challenger challenger)
+    {
+        Challenger storageChallenger = await this.challengerRepository
+            .SelectUserByTelegramIdAsync(challenger.TelegramId);
+
+        if (storageChallenger is null)
+        {
+            throw new Exception("Challenger not found");
+        }
+
+        storageChallenger.FirstName = challenger.FirstName;
+        storageChallenger.LastName = challenger.LastName;
+        storageChallenger.TotalSolvedProblems = challenger.TotalSolvedProblems;
+        storageChallenger.Attempts = challenger.Attempts;
+        storageChallenger.Status = challenger.Status;
+
+        await this.challengerRepository.UpdateChallengerAsync(storageChallenger);
+
+        return storageChallenger;
+    }
+}

@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DailyLeetcodeReminder.Core", "src\DailyLeetcodeReminder.Core\DailyLeetcodeReminder.Core.csproj", "{3712C1A0-23DD-4848-BEF9-EAD13692FA63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DailyLeetcodeReminder.Domain", "DailyLeetcodeReminder.Domain\DailyLeetcodeReminder.Domain.csproj", "{80E616F8-983E-44F2-8B88-5A992175D924}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DailyLeetcodeReminder.Infrastructure", "DailyLeetcodeReminder.Infrastructure\DailyLeetcodeReminder.Infrastructure.csproj", "{F7135F41-3617-41B0-9C15-AB6362076743}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DailyLeetcodeReminder.Application", "DailyLeetcodeReminder.Application\DailyLeetcodeReminder.Application.csproj", "{F54E4A91-E131-46ED-8C43-9EDCFF170E79}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3712C1A0-23DD-4848-BEF9-EAD13692FA63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3712C1A0-23DD-4848-BEF9-EAD13692FA63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3712C1A0-23DD-4848-BEF9-EAD13692FA63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3712C1A0-23DD-4848-BEF9-EAD13692FA63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80E616F8-983E-44F2-8B88-5A992175D924}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80E616F8-983E-44F2-8B88-5A992175D924}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80E616F8-983E-44F2-8B88-5A992175D924}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80E616F8-983E-44F2-8B88-5A992175D924}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7135F41-3617-41B0-9C15-AB6362076743}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7135F41-3617-41B0-9C15-AB6362076743}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7135F41-3617-41B0-9C15-AB6362076743}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7135F41-3617-41B0-9C15-AB6362076743}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F54E4A91-E131-46ED-8C43-9EDCFF170E79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F54E4A91-E131-46ED-8C43-9EDCFF170E79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F54E4A91-E131-46ED-8C43-9EDCFF170E79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F54E4A91-E131-46ED-8C43-9EDCFF170E79}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B02FD65A-4C74-4C55-9101-A6B5ACF6850B}
+	EndGlobalSection
+EndGlobal
