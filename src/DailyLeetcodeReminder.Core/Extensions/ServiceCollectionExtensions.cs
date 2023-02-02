@@ -1,7 +1,9 @@
 ﻿using DailyLeetcodeReminder.Application.Services;
 using DailyLeetcodeReminder.Core.Services;
+using DailyLeetcodeReminder.Infrastructure.Contexts;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
 using DailyLeetcodeReminder.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
 
 namespace DailyLeetcodeReminder.Core.Extensions;
@@ -16,7 +18,7 @@ public static class ServiceCollectionExtensions
         string botApiKey = configuration
             .GetSection("TelegramBot:ApiKey").Value;
 
-        services.AddSingleton(x => new TelegramBotClient(botApiKey));
+        services.AddSingleton<ITelegramBotClient, TelegramBotClient>(x => new TelegramBotClient(botApiKey));
 
         return services;
     }
@@ -30,8 +32,19 @@ public static class ServiceCollectionExtensions
     }
 
     public static IServiceCollection AddInfrastructure(
-        this IServiceCollection services)
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
+        services.AddDbContextPool<ApplicationDbContext>(options =>
+        {
+            options.UseSqlServer(
+                connectionString: configuration.GetConnectionString("SqlServerConnectionString"),
+                sqlServerOptionsAction: options =>
+                {
+                    options.EnableRetryOnFailure();
+                });
+        });
+
         services.AddScoped<IChallengerRepository, ChallengerRepository>();
         services.AddScoped<IAttemptRepository, AttemptRepository>();
 
@@ -60,7 +73,10 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddControllerMappers(
         this IServiceCollection services)
     {
-        services.AddControllers();
+        services
+            .AddControllers()
+            .AddNewtonsoftJson();
+
         services.AddEndpointsApiExplorer();
 
         return services;
@@ -76,6 +92,7 @@ public static class ServiceCollectionExtensions
                 .GetSection("Leetcode:BaseAddress").Value;
 
             config.BaseAddress = new Uri(baseAddress);
+            config.DefaultRequestHeaders.Add("User-Agent", "PostmanRuntime/7.30.0");
         });
 
         return services;

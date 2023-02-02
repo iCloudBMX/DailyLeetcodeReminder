@@ -1,8 +1,5 @@
 using DailyLeetcodeReminder.Core.Extensions;
-using DailyLeetcodeReminder.Core.Services;
-using Microsoft.Extensions.Configuration;
 using Telegram.Bot;
-using Telegram.Bot.Requests;
 
 namespace DailyLeetcodeReminder
 {
@@ -14,7 +11,7 @@ namespace DailyLeetcodeReminder
 
             builder.Services
                 .AddApplication()
-                .AddInfrastructure()
+                .AddInfrastructure(builder.Configuration)
                 .AddComamndHandler()
                 .AddTelegramBotClient(builder.Configuration)
                 .AddSwagger()
@@ -23,18 +20,13 @@ namespace DailyLeetcodeReminder
 
             var app = builder.Build();
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
             app.UseHttpsRedirection();
             app.UseAuthorization();
             app.MapControllers();
-            app.Run();
-
+            
             SetWebHook(app, builder.Configuration);
+         
+            app.Run();
         }
 
         private static void SetWebHook(
@@ -44,9 +36,15 @@ namespace DailyLeetcodeReminder
             using (var scope = builder.ApplicationServices.CreateScope())
             {
                 var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
-                var baseUrl = configuration.GetSection("TelegramBot:BaseUrl").Value;
-                var webhookUrl = $"{baseUrl}/api/bot";
-                botClient.SetWebhookAsync(webhookUrl).Wait();
+                var baseUrl = configuration.GetSection("TelegramBot:BaseAddress").Value;
+                var webhookUrl = $"{baseUrl}/bot";
+
+                var webhookInfo = botClient.GetWebhookInfoAsync().Result;
+
+                if (webhookInfo is null || webhookInfo.Url != webhookUrl)
+                {
+                    botClient.SetWebhookAsync(webhookUrl).Wait();
+                }
             }
         }
     }

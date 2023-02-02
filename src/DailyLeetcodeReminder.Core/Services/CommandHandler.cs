@@ -10,17 +10,21 @@ public class CommandHandler
 {
     private readonly IChallengerService challengerService;
     private readonly ITelegramBotClient telegramBotClient;
+    private readonly ILogger<CommandHandler> logger;
 
     public CommandHandler(
         IChallengerService challengerService,
-        ITelegramBotClient telegramBotClient)
+        ITelegramBotClient telegramBotClient,
+        ILogger<CommandHandler> logger)
     {
         this.challengerService = challengerService;
         this.telegramBotClient = telegramBotClient;
+        this.logger = logger;
     }
 
     public async Task HandleCommandAsync(Update update)
     {
+
         var message = update.Message;
 
         if (message == null || !message.Text.StartsWith("/"))
@@ -29,14 +33,25 @@ public class CommandHandler
         }
 
         var command = message.Text.Split(' ').First().Substring(1);
-        
-        switch (command)
+
+        try
         {
-            case "register":
-                await HandleRegisterCommandAsync(message);
-                break;
-            
-            // handle other commands here
+            switch (command)
+            {
+                case "register":
+                    await HandleRegisterCommandAsync(message);
+                    break;
+            }
+        }
+        catch(Exception exception)
+        {
+            this.logger.LogError(exception.Message);
+
+            await this.telegramBotClient.SendTextMessageAsync(
+                chatId: message.From.Id,
+                text: "Failed to handle your request. Please try again");
+
+            return;
         }
     }
 

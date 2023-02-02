@@ -4,21 +4,17 @@ using Telegram.Bot.Types;
 
 namespace DailyLeetcodeReminder.Controllers;
 
-[Route("api/[controller]")]
+[Route("bot")]
 [ApiController]
 public class BotController : ControllerBase
 {
-    private readonly CommandHandler commandHandler;
-
-    public BotController(CommandHandler commandHandler)
-    {
-        this.commandHandler = commandHandler;
-    }
-
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] Update update)
+    public async Task<IActionResult> Post(
+        [FromBody] Update update,
+        [FromServices] CommandHandler commandHandler)
     {
-        await this.commandHandler.HandleCommandAsync(update);
+        await commandHandler
+            .HandleCommandAsync(update);
 
         return Ok();
     }

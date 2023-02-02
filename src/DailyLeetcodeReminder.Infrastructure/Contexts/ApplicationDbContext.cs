@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace DailyLeetcodeReminder.Infrastructure.Contexts;
 
@@ -8,4 +9,9 @@ public class ApplicationDbContext : DbContext
 		: base(options)
 	{
 	}
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+    }
 }

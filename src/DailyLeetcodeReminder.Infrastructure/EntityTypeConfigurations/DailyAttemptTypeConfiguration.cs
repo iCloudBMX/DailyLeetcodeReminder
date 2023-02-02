@@ -8,6 +8,8 @@ public class DailyAttemptTypeConfiguration : IEntityTypeConfiguration<DailyAttem
 {
     public void Configure(EntityTypeBuilder<DailyAttempt> builder)
     {
+        builder.ToTable("DailyAttempts");
+
         builder.HasKey(da => new { da.Date, da.UserId });
         
         builder
