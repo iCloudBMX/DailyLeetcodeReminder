@@ -1,4 +1,5 @@
 ﻿using DailyLeetcodeReminder.Domain.Entities;
+using DailyLeetcodeReminder.Infrastructure.Models;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
 using DailyLeetcodeReminder.Infrastructure.Services;
 
@@ -7,23 +8,36 @@ namespace DailyLeetcodeReminder.Application.Services;
 public class ChallengerService : IChallengerService
 {
     private readonly IChallengerRepository challengerRepository;
-    private readonly ILeetCodeDataExtractorService leetCodeDataExtractorService;
+    private readonly ILeetCodeBroker leetcodeBroker;
     private const short maxAttempts = 3;
 
     public ChallengerService(
         IChallengerRepository userRepository,
-        ILeetCodeDataExtractorService leetCodeDataExtractorService)
+        ILeetCodeBroker leetcodeBroker)
     {
         this.challengerRepository = userRepository;
-        this.leetCodeDataExtractorService = leetCodeDataExtractorService;
+        this.leetcodeBroker = leetcodeBroker;
     }
 
     public async Task<Challenger> AddUserAsync(Challenger challenger)
     {
         challenger.Attempts = maxAttempts;
 
-        challenger.TotalSolvedProblems = await leetCodeDataExtractorService
-            .ExtractSolvedProblemsCountAsync(challenger.LeetcodeUserName);
+        UserProfile userProfile = await leetcodeBroker
+            .GetUserProfile(challenger.LeetcodeUserName);
+
+        SubmissionNumber? totalSubmission = userProfile
+            .SubmitStatistics
+            .Submissions
+            .Where(s => s.Difficulty == "All")
+            .FirstOrDefault();
+
+        if(totalSubmission is null)
+        {
+            throw new Exception("Unable to retrieve total solved problems");
+        }
+
+        challenger.TotalSolvedProblems = totalSubmission.Count;
 
         Challenger insertedChallenger = await this.challengerRepository
             .InsertChallengerAsync(challenger);

@@ -48,8 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IChallengerRepository, ChallengerRepository>();
         services.AddScoped<IAttemptRepository, AttemptRepository>();
 
-        services.AddTransient<ILeetCodeDataExtractorService, LeetCodeDataExtractorService>();
-        services.AddTransient<IHtmlParserService, HtmlParserService>();
+        services.AddTransient<ILeetCodeBroker, LeetCodeBroker>();
 
         return services;
     }
@@ -92,7 +91,6 @@ public static class ServiceCollectionExtensions
                 .GetSection("Leetcode:BaseAddress").Value;
 
             config.BaseAddress = new Uri(baseAddress);
-            config.DefaultRequestHeaders.Add("User-Agent", "PostmanRuntime/7.30.0");
         });
 
         return services;
