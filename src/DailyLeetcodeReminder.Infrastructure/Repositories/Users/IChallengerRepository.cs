@@ -8,4 +8,5 @@ public interface IChallengerRepository
     Task<Challenger> SelectUserByLeetcodeUsernameAsync(string leetcodeUsername);
     Task<Challenger> InsertChallengerAsync(Challenger challenger);
     Task UpdateChallengerAsync(Challenger challenger);
+    Task<List<ChallengerWithNoAttempt>> SelectUsersWithNoAttemptsAsync();
 }

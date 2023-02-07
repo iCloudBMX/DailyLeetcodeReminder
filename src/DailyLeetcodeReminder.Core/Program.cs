@@ -16,7 +16,9 @@ namespace DailyLeetcodeReminder
                 .AddTelegramBotClient(builder.Configuration)
                 .AddSwagger()
                 .AddControllerMappers()
-                .AddHttpClientServices(builder.Configuration);             
+                .AddHttpClientServices(builder.Configuration)
+                .AddTimers()
+                .AddBackgroundServices();
 
             var app = builder.Build();
 

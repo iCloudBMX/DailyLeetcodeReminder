@@ -1,5 +1,6 @@
 ﻿using DailyLeetcodeReminder.Application.Services;
 using DailyLeetcodeReminder.Core.Services;
+using DailyLeetcodeReminder.Infrastructure.BackgroundServices;
 using DailyLeetcodeReminder.Infrastructure.Contexts;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
 using DailyLeetcodeReminder.Infrastructure.Services;
@@ -92,6 +93,25 @@ public static class ServiceCollectionExtensions
 
             config.BaseAddress = new Uri(baseAddress);
         });
+
+        return services;
+    }
+
+    public static IServiceCollection AddTimers(
+        this IServiceCollection services)
+    {
+        int limitInMinutes = 1;
+
+        services.AddSingleton<PeriodicTimer>(c =>
+            new PeriodicTimer(TimeSpan.FromMinutes(limitInMinutes)));
+
+        return services;
+    }
+
+    public static IServiceCollection AddBackgroundServices(
+        this IServiceCollection services)
+    {
+        services.AddHostedService<DailyReminderBackgroundService>();
 
         return services;
     }

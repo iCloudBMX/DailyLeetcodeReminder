@@ -2,4 +2,5 @@
 
 public interface IAttemptRepository
 {
+    Task MarkDailyAttemptsAsync(List<long> challengerIds);
 }

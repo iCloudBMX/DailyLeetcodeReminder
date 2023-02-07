@@ -48,4 +48,21 @@ public class ChallengerRepository : IChallengerRepository
         await this.applicationDbContext
             .SaveChangesAsync();
     }
+
+    public async Task<List<ChallengerWithNoAttempt>> SelectUsersWithNoAttemptsAsync()
+    {
+        string sql = "select " +
+            "ch.TelegramId," +
+            "ch.TotalSolvedProblems," +
+            "d.SolvedProblems " +
+            "ch.LeetcodeUserName " +
+            "from Challengers as ch " +
+            "inner join DailyAttempts as d " +
+            $"on ch.TelegramId = d.UserId where d.Date = {DateTime.Now.Date} and d.SolvedProblems = 0";
+
+        return await this.applicationDbContext
+            .Database
+            .SqlQueryRaw<ChallengerWithNoAttempt>(sql)
+            .ToListAsync();
+    }
 }
