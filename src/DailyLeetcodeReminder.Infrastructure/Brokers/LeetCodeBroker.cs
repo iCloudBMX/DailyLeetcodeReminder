@@ -1,6 +1,7 @@
 ﻿using DailyLeetcodeReminder.Infrastructure.Models;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace DailyLeetcodeReminder.Infrastructure.Services;
 
@@ -14,7 +15,51 @@ public class LeetCodeBroker : ILeetCodeBroker
         this.httpClientFactory = httpClientFactory;
     }
 
-    public async Task<UserProfile> GetUserProfile(string leetcodeUsername)
+    public async Task<string> GetDailyChallengeUrlAsync()
+    {
+        using (var httpClient = this.httpClientFactory
+            .CreateClient("leetcode"))
+        {
+            var graphqlRequest = new GraphQLRequest
+            {
+                Query = @"
+                    query questionOfToday {
+                        activeDailyCodingChallengeQuestion {
+                            link
+                        }
+                    }"
+            };
+
+            var requestContent = new StringContent(
+                content: JsonSerializer.Serialize(
+                    value: graphqlRequest,
+                    options: new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    }),
+                encoding: Encoding.UTF8,
+                mediaType: "application/json");
+
+            HttpResponseMessage response = await httpClient.PostAsync(
+                requestUri: string.Empty,
+                content: requestContent);
+
+            var contentString = await response.Content.ReadAsStringAsync();
+            var jsonObject = JsonObject.Parse(contentString);
+
+            string? dailyChallengeUrl = jsonObject["data"]["activeDailyCodingChallengeQuestion"]["link"]
+                .GetValue<string>();
+
+            if (string.IsNullOrEmpty(dailyChallengeUrl))
+            {
+                throw new Exception("Failed to retrieve daily challenge url");
+            }
+
+            return dailyChallengeUrl;
+        }
+    }
+
+    public async Task<int> GetTotalSolvedProblemsCountAsync(string leetcodeUsername)
     {
         using (var httpClient = this.httpClientFactory
             .CreateClient("leetcode"))
@@ -24,7 +69,6 @@ public class LeetCodeBroker : ILeetCodeBroker
                 Query = @"
                     query ($username: String!) {
                         matchedUser(username: $username) {
-                            username
                             submitStats {
                                 acSubmissionNum {
                                     difficulty
@@ -41,7 +85,12 @@ public class LeetCodeBroker : ILeetCodeBroker
             };
 
             var requestContent = new StringContent(
-                content: JsonSerializer.Serialize(graphqlRequest),
+                content: JsonSerializer.Serialize(
+                    value: graphqlRequest,
+                    options: new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    }),
                 encoding: Encoding.UTF8,
                 mediaType: "application/json");
 
@@ -50,11 +99,20 @@ public class LeetCodeBroker : ILeetCodeBroker
                 content: requestContent);
 
             var contentString = await response.Content.ReadAsStringAsync();
-            
-            var leetcodeResult = JsonSerializer
-                .Deserialize<LeetCodeResult>(contentString);
+            var jsonObject = JsonObject.Parse(contentString);
 
-            return leetcodeResult.MatchedUser;
+            int? totalSolvedProblemsCount = jsonObject["data"]["matchedUser"]["submitStats"]["acSubmissionNum"]
+                .GetValue<List<Submission>>()
+                .Where(submission => submission.Difficulty == "All")
+                .Select(submission => submission.Count)
+                .FirstOrDefault();
+
+            if (totalSolvedProblemsCount.HasValue is false)
+            {
+                throw new FormatException("Failed to retrieve solved problems count");
+            }
+
+            return totalSolvedProblemsCount.Value;
         }
     }
 }

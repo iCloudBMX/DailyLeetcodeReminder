@@ -23,21 +23,8 @@ public class ChallengerService : IChallengerService
     {
         challenger.Attempts = maxAttempts;
 
-        UserProfile userProfile = await leetcodeBroker
-            .GetUserProfile(challenger.LeetcodeUserName);
-
-        SubmissionNumber? totalSubmission = userProfile
-            .SubmitStatistics
-            .Submissions
-            .Where(s => s.Difficulty == "All")
-            .FirstOrDefault();
-
-        if(totalSubmission is null)
-        {
-            throw new Exception("Unable to retrieve total solved problems");
-        }
-
-        challenger.TotalSolvedProblems = totalSubmission.Count;
+        challenger.TotalSolvedProblems = await leetcodeBroker
+            .GetTotalSolvedProblemsCountAsync(challenger.LeetcodeUserName);
 
         Challenger insertedChallenger = await this.challengerRepository
             .InsertChallengerAsync(challenger);

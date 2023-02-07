@@ -4,5 +4,6 @@ namespace DailyLeetcodeReminder.Infrastructure.Services;
 
 public interface ILeetCodeBroker
 {
-    Task<UserProfile> GetUserProfile(string leetcodeUsername);
+    Task<int> GetTotalSolvedProblemsCountAsync(string leetcodeUsername);
+    Task<string> GetDailyChallengeUrlAsync();
 }
