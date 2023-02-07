@@ -100,10 +100,10 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddTimers(
         this IServiceCollection services)
     {
-        int limitInMinutes = 1;
+        int limitInMinutes = 10;
 
         services.AddSingleton<PeriodicTimer>(c =>
-            new PeriodicTimer(TimeSpan.FromMinutes(limitInMinutes)));
+            new PeriodicTimer(TimeSpan.FromSeconds(limitInMinutes)));
 
         return services;
     }

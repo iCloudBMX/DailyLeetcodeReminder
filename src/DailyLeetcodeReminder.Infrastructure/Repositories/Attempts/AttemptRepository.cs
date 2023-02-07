@@ -14,9 +14,9 @@ public class AttemptRepository : IAttemptRepository
 
     public async Task MarkDailyAttemptsAsync(List<long> challengerIds)
     {
-        string sql = $"update DailyAttepmpts " +
+        string sql = $"update DailyAttempts " +
             $"set SolvedProblems = SolvedProblems + 1 " +
-            $"in [{string.Join(',', challengerIds)}]";
+            $"where UserId in ({string.Join(',', challengerIds)})";
 
         await this.applicationDbContext.Database.ExecuteSqlRawAsync(sql);
     }

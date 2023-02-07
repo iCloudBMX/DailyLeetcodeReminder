@@ -102,7 +102,7 @@ public class LeetCodeBroker : ILeetCodeBroker
             var jsonObject = JsonObject.Parse(contentString);
 
             int? totalSolvedProblemsCount = jsonObject["data"]["matchedUser"]["submitStats"]["acSubmissionNum"]
-                .GetValue<List<Submission>>()
+                .Deserialize<List<Submission>>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                 .Where(submission => submission.Difficulty == "All")
                 .Select(submission => submission.Count)
                 .FirstOrDefault();

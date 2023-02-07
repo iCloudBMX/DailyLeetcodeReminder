@@ -1,5 +1,8 @@
-﻿namespace DailyLeetcodeReminder.Domain.Entities;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
+namespace DailyLeetcodeReminder.Domain.Entities;
+
+[NotMapped]
 public class ChallengerWithNoAttempt
 {
     public long TelegramId { get; set; }
