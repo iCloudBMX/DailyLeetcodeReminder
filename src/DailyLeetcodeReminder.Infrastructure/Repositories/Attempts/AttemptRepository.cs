@@ -12,6 +12,15 @@ public class AttemptRepository : IAttemptRepository
         this.applicationDbContext = applicationDbContext;
     }
 
+    public async Task InitializeDailyAttemptsAsync()
+    {
+        string sql = "INSERT INTO DailyAttempts " +
+            "SELECT CAST(GETDATE() AS Date), TelegramId, 0 " +
+            "FROM Challengers WHERE Status = 0";
+
+        await this.applicationDbContext.Database.ExecuteSqlRawAsync(sql);
+    }
+
     public async Task MarkDailyAttemptsAsync(List<long> challengerIds)
     {
         string sql = $"update DailyAttempts " +

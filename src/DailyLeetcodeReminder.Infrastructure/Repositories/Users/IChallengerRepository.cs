@@ -9,4 +9,7 @@ public interface IChallengerRepository
     Task<Challenger> InsertChallengerAsync(Challenger challenger);
     Task UpdateChallengerAsync(Challenger challenger);
     Task<List<ChallengerWithNoAttempt>> SelectUsersWithNoAttemptsAsync();
+    Task<List<Challenger>> SelectActiveChallengersAsync();
+
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

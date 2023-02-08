@@ -4,7 +4,6 @@ using DailyLeetcodeReminder.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Telegram.Bot;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace DailyLeetcodeReminder.Infrastructure.BackgroundServices;
 
@@ -14,10 +13,9 @@ public class DailyReminderBackgroundService : BackgroundService
     private readonly IServiceScopeFactory serviceScopeFactory;
 
     public DailyReminderBackgroundService(
-        IServiceScopeFactory serviceScopeFactory,
-        PeriodicTimer periodicTimer)
+        IServiceScopeFactory serviceScopeFactory)
     {
-        this.periodicTimer = periodicTimer;
+        this.periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(30));
         this.serviceScopeFactory = serviceScopeFactory;
     }
 

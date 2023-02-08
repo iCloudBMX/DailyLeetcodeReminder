@@ -1,4 +1,5 @@
 ﻿using DailyLeetcodeReminder.Domain.Entities;
+using DailyLeetcodeReminder.Domain.Enums;
 using DailyLeetcodeReminder.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -64,5 +65,21 @@ public class ChallengerRepository : IChallengerRepository
             .Set<ChallengerWithNoAttempt>()
             .FromSqlRaw<ChallengerWithNoAttempt>(sql)
             .ToListAsync();
+    }
+
+    public async Task<List<Challenger>> SelectActiveChallengersAsync()
+    {
+        return await this.applicationDbContext
+            .Set<Challenger>()
+            .Include(ch => ch.DailyAttempts
+                .Where(da => da.Date == DateTime.Now.Date.AddDays(-1)))
+            .Where(x => x.Status == UserStatus.Active)
+            .ToListAsync();
+    }
+
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+       return await this.applicationDbContext
+            .SaveChangesAsync(cancellationToken);
     }
 }

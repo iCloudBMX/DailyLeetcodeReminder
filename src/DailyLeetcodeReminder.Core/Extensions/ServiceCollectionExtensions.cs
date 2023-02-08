@@ -112,6 +112,7 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services)
     {
         services.AddHostedService<DailyReminderBackgroundService>();
+        services.AddHostedService<DailyReportBackgroundService>();
 
         return services;
     }
