@@ -25,7 +25,8 @@ public class AttemptRepository : IAttemptRepository
     {
         string sql = $"update DailyAttempts " +
             $"set SolvedProblems = SolvedProblems + 1 " +
-            $"where UserId in ({string.Join(',', challengerIds)})";
+            $"where UserId in ({string.Join(',', challengerIds)}) " +
+            $"and DailyAttempts.Date = '{DateOnly.FromDateTime(DateTime.Now)}'";
 
         await this.applicationDbContext.Database.ExecuteSqlRawAsync(sql);
     }
