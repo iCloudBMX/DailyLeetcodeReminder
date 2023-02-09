@@ -18,4 +18,8 @@
   <ItemGroup>
     <ProjectReference Include="..\DailyLeetcodeReminder.Application\DailyLeetcodeReminder.Application.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="MIddlewares\" />
+  </ItemGroup>
 </Project>

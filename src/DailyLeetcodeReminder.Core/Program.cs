@@ -1,4 +1,5 @@
 using DailyLeetcodeReminder.Core.Extensions;
+using DailyLeetcodeReminder.Core.Middlewares;
 using Telegram.Bot;
 
 namespace DailyLeetcodeReminder
@@ -24,6 +25,7 @@ namespace DailyLeetcodeReminder
 
             app.UseHttpsRedirection();
             app.UseAuthorization();
+            app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
             app.MapControllers();
             
             SetWebHook(app, builder.Configuration);

@@ -36,12 +36,14 @@ public class CommandHandler
 
         try
         {
-            switch (command)
+            var task = command switch
             {
-                case "register":
-                    await HandleRegisterCommandAsync(message);
-                    break;
-            }
+                "start" => HandleStartCommandAsync(message),
+                "register" => HandleRegisterCommandAsync(message),
+                _ => HandleNotAvailableCommandAsync(message)
+            };
+
+            await task;
         }
         catch(Exception exception)
         {
@@ -53,6 +55,24 @@ public class CommandHandler
 
             return;
         }
+    }
+
+    private async Task HandleStartCommandAsync(Message message)
+    {
+        await this.telegramBotClient.SendTextMessageAsync(
+                chatId: message.From.Id,
+                text: "Daily leetcode botiga xush kelibsiz. " +
+                "Kunlik challenge'da qatnashish uchun, " +
+                "leetcode username'ni /register komandasidan keyin yuboring. " +
+                "Misol uchun: /register username");
+    }
+
+    private async Task HandleNotAvailableCommandAsync(Message message)
+    {
+        await this.telegramBotClient.SendTextMessageAsync(
+                chatId: message.From.Id,
+                text: "Mavjud bo'lmagan komanda kiritildi. " +
+                "Tekshirib ko'ring.");
     }
 
     private async Task HandleRegisterCommandAsync(Message message)

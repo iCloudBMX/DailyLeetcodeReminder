@@ -1,6 +1,7 @@
 ﻿using DailyLeetcodeReminder.Domain.Entities;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
 using DailyLeetcodeReminder.Infrastructure.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Telegram.Bot;
@@ -15,7 +16,13 @@ public class DailyReminderBackgroundService : BackgroundService
     public DailyReminderBackgroundService(
         IServiceScopeFactory serviceScopeFactory)
     {
-        this.periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(30));
+        using var scope = serviceScopeFactory.CreateScope();
+
+        var configuration = scope.ServiceProvider
+            .GetRequiredService<IConfiguration>();
+
+        short reminderInHours = short.Parse(configuration.GetSection("Timer:Reminder").Value);
+        this.periodicTimer = new PeriodicTimer(TimeSpan.FromHours(reminderInHours));
         this.serviceScopeFactory = serviceScopeFactory;
     }
 
