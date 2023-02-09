@@ -57,6 +57,10 @@ public class DailyReportJob : IJob
             if (activeChallenger.Attempts <= 0)
             {
                 activeChallenger.Status = UserStatus.Inactive;
+
+                await telegramBotClient.BanChatMemberAsync(
+                    chatId: groupId,
+                    userId: activeChallenger.TelegramId);
             }
             else
             {
