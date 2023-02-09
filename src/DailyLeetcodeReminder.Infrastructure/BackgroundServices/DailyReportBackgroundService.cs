@@ -50,11 +50,11 @@ public class DailyReportBackgroundService : BackgroundService
             // if user hasn't solved any problem, decrease attempts count
             if(difference == 0)
             {
-                activeChallenger.Attempts--;
+                activeChallenger.Heart--;
             }
 
             // if attempts count <= 0 block the challenger
-            if(activeChallenger.Attempts <= 0)
+            if(activeChallenger.Heart <= 0)
             {
                 activeChallenger.Status = UserStatus.Inactive;
             }
@@ -84,7 +84,7 @@ public class DailyReportBackgroundService : BackgroundService
         foreach(var challenger in activeChallengers)
         {
             messageBuilder.Append($"{challenger.LeetcodeUserName}\t|");
-            messageBuilder.Append($"{challenger.Attempts}\t|");
+            messageBuilder.Append($"{challenger.Heart}\t|");
             messageBuilder.Append($"{challenger.DailyAttempts.First().SolvedProblems}\t|");
             messageBuilder.Append($"{challenger.TotalSolvedProblems}\n");
         }

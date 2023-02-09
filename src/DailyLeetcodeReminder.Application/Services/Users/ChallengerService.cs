@@ -21,7 +21,7 @@ public class ChallengerService : IChallengerService
 
     public async Task<Challenger> AddUserAsync(Challenger challenger)
     {
-        challenger.Attempts = maxAttempts;
+        challenger.Heart = maxAttempts;
 
         challenger.TotalSolvedProblems = await leetcodeBroker
             .GetTotalSolvedProblemsCountAsync(challenger.LeetcodeUserName);
@@ -71,7 +71,7 @@ public class ChallengerService : IChallengerService
         storageChallenger.FirstName = challenger.FirstName;
         storageChallenger.LastName = challenger.LastName;
         storageChallenger.TotalSolvedProblems = challenger.TotalSolvedProblems;
-        storageChallenger.Attempts = challenger.Attempts;
+        storageChallenger.Heart = challenger.Heart;
         storageChallenger.Status = challenger.Status;
 
         await this.challengerRepository.UpdateChallengerAsync(storageChallenger);
