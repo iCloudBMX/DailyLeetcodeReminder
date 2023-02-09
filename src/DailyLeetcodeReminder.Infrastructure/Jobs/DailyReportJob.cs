@@ -47,7 +47,8 @@ public class DailyReportJob : IJob
             int difference = totalSolvedProblemsCount - activeChallenger.TotalSolvedProblems;
 
             // if user hasn't solved any problem, decrease attempts count
-            if (difference == 0)
+            if (difference == 0 && 
+                activeChallenger.CreatedAt.Date < DateTime.Now.Date.AddDays(-1))
             {
                 activeChallenger.Attempts--;
             }
