@@ -3,6 +3,7 @@ using DailyLeetcodeReminder.Domain.Enums;
 using Telegram.Bot.Types;
 using DailyLeetcodeReminder.Domain.Entities;
 using Telegram.Bot;
+using DailyLeetcodeReminder.Domain.Exceptions;
 
 namespace DailyLeetcodeReminder.Core.Services;
 
@@ -44,6 +45,46 @@ public class CommandHandler
             };
 
             await task;
+        }
+        catch(AlreadyExictException exception)
+        {
+            this.logger.LogError(exception.Message);
+
+            await this.telegramBotClient.SendTextMessageAsync(
+                chatId: message.From.Id,
+                text: exception.Message);
+
+            return;
+        }
+        catch(NotFaundLeetCodeUserNameException exception)
+        {
+            this.logger.LogError(exception.Message);
+
+            await this.telegramBotClient.SendTextMessageAsync(
+                chatId: message.From.Id,
+                text: exception.Message);
+
+            return;
+        }
+        catch(DuplicateTelegramIdException exception)
+        {
+            this.logger.LogError(exception.Message);
+
+            await this.telegramBotClient.SendTextMessageAsync(
+                chatId: message.From.Id,
+                text: exception.Message);
+
+            return;
+        }
+        catch(DuplicateLeetCodeUserNameException exception)
+        {
+            this.logger.LogError(exception.Message);
+
+            await this.telegramBotClient.SendTextMessageAsync(
+                chatId: message.From.Id,
+                text: exception.Message);
+
+            return;
         }
         catch(Exception exception)
         {

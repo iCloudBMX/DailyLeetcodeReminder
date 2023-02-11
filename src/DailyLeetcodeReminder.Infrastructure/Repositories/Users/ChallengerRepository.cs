@@ -1,7 +1,9 @@
 ﻿using DailyLeetcodeReminder.Domain.Entities;
 using DailyLeetcodeReminder.Domain.Enums;
+using DailyLeetcodeReminder.Domain.Exceptions;
 using DailyLeetcodeReminder.Infrastructure.Contexts;
 using DailyLeetcodeReminder.Infrastructure.Jobs;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace DailyLeetcodeReminder.Infrastructure.Repositories;
@@ -47,8 +49,7 @@ public class ChallengerRepository : IChallengerRepository
             .Set<Challenger>()
             .Update(challenger);
 
-        await this.applicationDbContext
-            .SaveChangesAsync();
+        await this.SaveChangesAsync();
     }
 
     public async Task<List<ChallengerWithNoAttempt>> SelectUsersWithNoAttemptsAsync()
@@ -80,7 +81,40 @@ public class ChallengerRepository : IChallengerRepository
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-       return await this.applicationDbContext
-            .SaveChangesAsync(cancellationToken);
+        try
+        {
+            return await this.applicationDbContext
+                    .SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            if (ex.InnerException is SqlException sqlException)
+            {
+                if (sqlException.Number == 2601 && 
+                    sqlException.Message.Contains("LeetcodeUserName") &&
+                    sqlException.Message.Contains("TelegramId"))
+                {
+                    throw new AlreadyExictException();
+                }
+                else if (sqlException.Number == 2601 && 
+                    sqlException.Message.Contains("LeetcodeUserName"))
+                {
+                    throw new DuplicateLeetCodeUserNameException();
+                }
+                else if (sqlException.Number == 2601 && 
+                        sqlException.Message.Contains("TelegramId"))
+                {
+                    throw new DuplicateTelegramIdException();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            else
+            {
+                throw;
+            }
+        }
     }
 }
