@@ -74,7 +74,6 @@ public class ChallengerRepository : IChallengerRepository
             .Include(ch => ch.DailyAttempts
                 .Where(da => da.Date == DateTime.Now.Date.AddDays(-1)))
             .Where(ch => ch.Status == UserStatus.Active)
-            .Where(ch => ch.CreatedAt.Date < DateTime.Now.Date)
             .ToListAsync();
     }
 

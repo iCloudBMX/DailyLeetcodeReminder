@@ -47,7 +47,8 @@ public class DailyReportJob : IJob
             int difference = totalSolvedProblemsCount - activeChallenger.TotalSolvedProblems;
 
             // if user hasn't solved any problem, decrease attempts count
-            if (difference == 0)
+            if (difference == 0 && 
+                activeChallenger.CreatedAt.Date < DateTime.Now.Date.AddDays(-1))
             {
                 activeChallenger.Attempts--;
             }
@@ -56,6 +57,10 @@ public class DailyReportJob : IJob
             if (activeChallenger.Attempts <= 0)
             {
                 activeChallenger.Status = UserStatus.Inactive;
+
+                await telegramBotClient.BanChatMemberAsync(
+                    chatId: groupId,
+                    userId: activeChallenger.TelegramId);
             }
             else
             {
