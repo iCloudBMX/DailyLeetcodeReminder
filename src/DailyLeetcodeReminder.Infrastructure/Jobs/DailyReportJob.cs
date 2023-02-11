@@ -3,40 +3,33 @@ using DailyLeetcodeReminder.Domain.Enums;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
 using DailyLeetcodeReminder.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Quartz;
 using System.Text;
 using Telegram.Bot;
 
-namespace DailyLeetcodeReminder.Infrastructure.BackgroundServices;
+namespace DailyLeetcodeReminder.Infrastructure.Jobs;
 
-public class DailyReportBackgroundService : BackgroundService
+public class DailyReportJob : IJob
 {
-    private Timer timer = null;
-    private readonly IServiceScopeFactory serviceScopeFactory;
+    private readonly IChallengerRepository challengerRepository;
+    private readonly ITelegramBotClient telegramBotClient;
+    private readonly ILeetCodeBroker leetcodeBroker;
+    private readonly IConfiguration configuration;
 
-    public DailyReportBackgroundService(
-        IServiceScopeFactory serviceScopeFactory)
+    public DailyReportJob(
+        IChallengerRepository challengerRepository,
+        ITelegramBotClient telegramBotClient,
+        ILeetCodeBroker leetcodeBroker,
+        IConfiguration configuration)
     {
-        this.serviceScopeFactory = serviceScopeFactory;        
+        this.challengerRepository = challengerRepository;
+        this.telegramBotClient = telegramBotClient;
+        this.leetcodeBroker = leetcodeBroker;
+        this.configuration = configuration;
     }
 
-    private async void GenerateReportAsync(object? state)
+    public async Task Execute(IJobExecutionContext context)
     {
-        using var scope = serviceScopeFactory.CreateScope();
-
-        var challengerRepository = scope.ServiceProvider
-            .GetRequiredService<IChallengerRepository>();
-
-        var leetcodeBroker = scope.ServiceProvider
-            .GetRequiredService<ILeetCodeBroker>();
-
-        var telegramBotClient = scope.ServiceProvider
-            .GetRequiredService<ITelegramBotClient>();
-
-        var configuration = scope.ServiceProvider
-            .GetRequiredService<IConfiguration>();
-
         long groupId = long.Parse(configuration
             .GetSection("TelegramBot:GroupId").Value);
 
@@ -110,19 +103,5 @@ public class DailyReportBackgroundService : BackgroundService
         }
 
         await telegramBotClient.SendTextMessageAsync(groupId, messageBuilder.ToString());
-    }
-
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        var timeDiff = TimeOnly.Parse("00:00:00") - TimeOnly.FromDateTime(DateTime.Now);
-        this.timer = new Timer(GenerateReportAsync, null, timeDiff, TimeSpan.FromHours(24));
-
-        return Task.CompletedTask;
-    }
-
-    public override void Dispose()
-    {
-        this.timer.Dispose();
-        base.Dispose();
     }
 }

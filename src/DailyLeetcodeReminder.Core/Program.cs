@@ -19,7 +19,7 @@ namespace DailyLeetcodeReminder
                 .AddControllerMappers()
                 .AddHttpClientServices(builder.Configuration)
                 .AddTimers()
-                .AddBackgroundServices();
+                .AddJobs();
 
             var app = builder.Build();
 

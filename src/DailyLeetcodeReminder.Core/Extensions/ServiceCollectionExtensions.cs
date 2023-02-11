@@ -1,10 +1,11 @@
 ﻿using DailyLeetcodeReminder.Application.Services;
 using DailyLeetcodeReminder.Core.Services;
-using DailyLeetcodeReminder.Infrastructure.BackgroundServices;
+using DailyLeetcodeReminder.Infrastructure.Jobs;
 using DailyLeetcodeReminder.Infrastructure.Contexts;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
 using DailyLeetcodeReminder.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using Quartz;
 using Telegram.Bot;
 
 namespace DailyLeetcodeReminder.Core.Extensions;
@@ -108,11 +109,40 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddBackgroundServices(
+    public static IServiceCollection AddJobs(
         this IServiceCollection services)
     {
-        services.AddHostedService<DailyReminderBackgroundService>();
-        services.AddHostedService<DailyReportBackgroundService>();
+        services.AddQuartz(q =>
+        {
+            q.UseMicrosoftDependencyInjectionScopedJobFactory();
+
+            var dailyReminderJobKey = new JobKey(nameof(DailyReminderJob));
+
+            q.AddJob<DailyReminderJob>(opts =>
+            {
+                opts.WithIdentity(dailyReminderJobKey);
+            });
+
+            q.AddTrigger(opts => opts
+                .ForJob(dailyReminderJobKey)
+                .WithIdentity($"{dailyReminderJobKey.Name}-trigger")
+                .WithCronSchedule("* * 9,14,23 * * *")
+            );
+
+            var dailyReportJobKey = new JobKey(nameof(DailyReportJob));
+            
+            q.AddJob<DailyReportJob>(opts =>
+            {
+                opts.WithIdentity(dailyReportJobKey);
+            });
+
+            q.AddTrigger(opts => opts
+                .ForJob(dailyReportJobKey)
+                .WithIdentity($"{dailyReportJobKey.Name}-trigger")
+                .WithCronSchedule("* 0 0 * * *")
+            );
+        });
+        services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
         return services;
     }
