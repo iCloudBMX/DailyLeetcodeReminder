@@ -56,7 +56,7 @@ public class ChallengerRepository : IChallengerRepository
             return await this.applicationDbContext
             .Set<Challenger>()
             .Include(ch => ch.DailyAttempts
-                .Where(da => da.Date == DateTime.Now.Date.AddDays(DailyReportJob.day - 1))
+                .Where(da => da.Date == DateTime.Now.Date.AddDays(-1))
                 .Where(da => da.SolvedProblems == 0))
             .Where(ch => ch.Status == UserStatus.Active)
             .Select(ch => new ChallengerWithNoAttempt
@@ -73,7 +73,7 @@ public class ChallengerRepository : IChallengerRepository
         return await this.applicationDbContext
             .Set<Challenger>()
             .Include(ch => ch.DailyAttempts
-                .Where(da => da.Date == DateTime.Now.Date.AddDays(DailyReportJob.day - 1)))
+                .Where(da => da.Date == DateTime.Now.Date.AddDays(-1)))
             .Where(ch => ch.Status == UserStatus.Active)
             .ToListAsync();
     }

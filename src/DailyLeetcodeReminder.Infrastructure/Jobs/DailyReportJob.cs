@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Quartz;
 using System.Text;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
 
 namespace DailyLeetcodeReminder.Infrastructure.Jobs;
 
@@ -58,9 +59,15 @@ public class DailyReportJob : IJob
             {
                 activeChallenger.Status = UserStatus.Inactive;
 
-                await telegramBotClient.BanChatMemberAsync(
-                    chatId: groupId,
-                    userId: activeChallenger.TelegramId);
+                var chatMember = await telegramBotClient
+                    .GetChatMemberAsync(groupId, activeChallenger.TelegramId);
+
+                if(chatMember.Status is not ChatMemberStatus.Administrator and not ChatMemberStatus.Creator)
+                {
+                    await telegramBotClient.BanChatMemberAsync(
+                        chatId: groupId,
+                        userId: activeChallenger.TelegramId).ConfigureAwait(false);
+                }
             }
             else
             {
