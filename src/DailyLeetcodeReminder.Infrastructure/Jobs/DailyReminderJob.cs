@@ -29,7 +29,7 @@ public class DailyReminderJob : IJob
     {
         try
         {
-            List<ChallengerWithNoAttempt> challengers =
+           List<ChallengerWithNoAttempt> challengers =
                 await challengerRepository.SelectUsersWithNoAttemptsAsync();
 
             List<long> challengersWithNoAttempts = new();

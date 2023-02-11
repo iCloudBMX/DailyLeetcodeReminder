@@ -111,7 +111,7 @@ public static class ServiceCollectionExtensions
             q.AddTrigger(opts => opts
                 .ForJob(dailyReminderJobKey)
                 .WithIdentity($"{dailyReminderJobKey.Name}-trigger")
-                .WithCronSchedule("0 0 9,14,23 * * ?")
+                .WithCronSchedule("*/20 * * * * ?")
             );
 
             var dailyReportJobKey = new JobKey(nameof(DailyReportJob));
@@ -124,7 +124,7 @@ public static class ServiceCollectionExtensions
             q.AddTrigger(opts => opts
                 .ForJob(dailyReportJobKey)
                 .WithIdentity($"{dailyReportJobKey.Name}-trigger")
-                .WithCronSchedule("0 0 0 * * ?")
+                .WithCronSchedule("30 */1 * * * ?")
             );
         });
         services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
