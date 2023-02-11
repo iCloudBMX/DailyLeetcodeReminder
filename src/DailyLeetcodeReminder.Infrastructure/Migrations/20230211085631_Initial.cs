@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DailyLeetcodeReminder.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,12 +16,13 @@ namespace DailyLeetcodeReminder.Infrastructure.Migrations
                 columns: table => new
                 {
                     TelegramId = table.Column<long>(type: "bigint", nullable: false),
-                    LeetcodeUserName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Attempts = table.Column<short>(type: "smallint", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    TotalSolvedProblems = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    LeetcodeUserName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Heart = table.Column<short>(type: "smallint", nullable: false),
+                    FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    TotalSolvedProblems = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -29,12 +30,24 @@ namespace DailyLeetcodeReminder.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ChallengerWithNoAttempt",
+                columns: table => new
+                {
+                    TelegramId = table.Column<long>(type: "bigint", nullable: false),
+                    TotalSolvedProblems = table.Column<int>(type: "integer", nullable: false),
+                    LeetcodeUserName = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DailyAttempts",
                 columns: table => new
                 {
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UserId = table.Column<long>(type: "bigint", nullable: false),
-                    SolvedProblems = table.Column<int>(type: "int", nullable: false)
+                    SolvedProblems = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -62,6 +75,9 @@ namespace DailyLeetcodeReminder.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "ChallengerWithNoAttempt");
+
             migrationBuilder.DropTable(
                 name: "DailyAttempts");
 

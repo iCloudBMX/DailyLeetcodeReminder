@@ -3,17 +3,17 @@ using System;
 using DailyLeetcodeReminder.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace DailyLeetcodeReminder.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230211071703_RenamedAttemptsProperty")]
-    partial class RenamedAttemptsProperty
+    [Migration("20230211085631_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,9 +21,9 @@ namespace DailyLeetcodeReminder.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "7.0.2")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("DailyLeetcodeReminder.Domain.Entities.Challenger", b =>
                 {
@@ -31,29 +31,29 @@ namespace DailyLeetcodeReminder.Infrastructure.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FirstName")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<short>("Heart")
                         .HasColumnType("smallint");
 
                     b.Property<string>("LastName")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("LeetcodeUserName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("Status")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("TotalSolvedProblems")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("TelegramId");
 
@@ -67,13 +67,13 @@ namespace DailyLeetcodeReminder.Infrastructure.Migrations
                 {
                     b.Property<string>("LeetcodeUserName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<long>("TelegramId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("TotalSolvedProblems")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.ToTable("ChallengerWithNoAttempt");
                 });
@@ -81,13 +81,13 @@ namespace DailyLeetcodeReminder.Infrastructure.Migrations
             modelBuilder.Entity("DailyLeetcodeReminder.Domain.Entities.DailyAttempt", b =>
                 {
                     b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("SolvedProblems")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Date", "UserId");
 

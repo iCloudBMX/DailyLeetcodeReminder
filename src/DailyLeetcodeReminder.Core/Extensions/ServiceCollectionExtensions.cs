@@ -39,12 +39,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContextPool<ApplicationDbContext>(options =>
         {
-            options.UseSqlServer(
-                connectionString: configuration.GetConnectionString("SqlServerConnectionString"),
-                sqlServerOptionsAction: options =>
-                {
-                    options.EnableRetryOnFailure();
-                });
+            options.UseNpgsql(
+                connectionString: configuration.GetConnectionString("PostgreSqlConnectionString"));
         });
 
         services.AddScoped<IChallengerRepository, ChallengerRepository>();
