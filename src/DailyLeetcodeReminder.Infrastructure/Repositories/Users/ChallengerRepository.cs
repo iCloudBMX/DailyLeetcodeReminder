@@ -1,6 +1,7 @@
 ﻿using DailyLeetcodeReminder.Domain.Entities;
 using DailyLeetcodeReminder.Domain.Enums;
 using DailyLeetcodeReminder.Infrastructure.Contexts;
+using DailyLeetcodeReminder.Infrastructure.Jobs;
 using Microsoft.EntityFrameworkCore;
 
 namespace DailyLeetcodeReminder.Infrastructure.Repositories;
@@ -52,18 +53,18 @@ public class ChallengerRepository : IChallengerRepository
 
     public async Task<List<ChallengerWithNoAttempt>> SelectUsersWithNoAttemptsAsync()
     {
-        string sql = "select " +
-            "ch.TelegramId, " +
-            "ch.TotalSolvedProblems, " +
-            "d.SolvedProblems, " +
-            "ch.LeetcodeUserName " +
-            "from Challengers as ch " +
-            "inner join DailyAttempts as d " +
-            $"on ch.TelegramId = d.UserId where d.Date = '{DateTime.Now.Date}' and d.SolvedProblems = 0 and ch.Status = 0";
-
-        return await this.applicationDbContext
-            .Set<ChallengerWithNoAttempt>()
-            .FromSqlRaw(sql)
+            return await this.applicationDbContext
+            .Set<Challenger>()
+            .Include(ch => ch.DailyAttempts
+                .Where(da => da.Date == DateTime.Now.Date.AddDays(DailyReportJob.day - 1))
+                .Where(da => da.SolvedProblems == 0))
+            .Where(ch => ch.Status == UserStatus.Active)
+            .Select(ch => new ChallengerWithNoAttempt
+            {
+                LeetcodeUserName = ch.LeetcodeUserName,
+                TelegramId = ch.TelegramId,
+                TotalSolvedProblems = ch.TotalSolvedProblems
+            })
             .ToListAsync();
     }
 
@@ -72,7 +73,7 @@ public class ChallengerRepository : IChallengerRepository
         return await this.applicationDbContext
             .Set<Challenger>()
             .Include(ch => ch.DailyAttempts
-                .Where(da => da.Date == DateTime.Now.Date.AddDays(-1)))
+                .Where(da => da.Date == DateTime.Now.Date.AddDays(DailyReportJob.day - 1)))
             .Where(ch => ch.Status == UserStatus.Active)
             .ToListAsync();
     }

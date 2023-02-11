@@ -9,6 +9,8 @@ namespace DailyLeetcodeReminder
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             builder.Services
                 .AddApplication()
