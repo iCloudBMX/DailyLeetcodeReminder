@@ -98,17 +98,6 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddTimers(
-        this IServiceCollection services)
-    {
-        int limitInMinutes = 10;
-
-        services.AddSingleton<PeriodicTimer>(c =>
-            new PeriodicTimer(TimeSpan.FromSeconds(limitInMinutes)));
-
-        return services;
-    }
-
     public static IServiceCollection AddJobs(
         this IServiceCollection services)
     {
