@@ -1,4 +1,6 @@
-﻿namespace DailyLeetcodeReminder.Core.Middlewares
+﻿using System.Net;
+
+namespace DailyLeetcodeReminder.Core.Middlewares
 {
     public class GlobalExceptionHandlingMiddleware
     {
@@ -20,6 +22,9 @@
             catch (Exception exception)
             {
                 logger.LogError(exception, exception.Message);
+
+                httpContext.Response.ContentType = "application/json";
+                httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
             }
         }
     }
