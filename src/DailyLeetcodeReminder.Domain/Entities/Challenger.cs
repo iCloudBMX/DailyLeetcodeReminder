@@ -6,7 +6,7 @@ public class Challenger
 {
     public long TelegramId { get; set; }
     public string LeetcodeUserName { get; set; } = null!;
-    public short Attempts { get; set; }
+    public short Heart { get; set; }
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public int TotalSolvedProblems { get; set; }
