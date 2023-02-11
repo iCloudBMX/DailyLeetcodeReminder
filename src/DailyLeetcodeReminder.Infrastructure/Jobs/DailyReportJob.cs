@@ -2,44 +2,43 @@
 using DailyLeetcodeReminder.Domain.Enums;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
 using DailyLeetcodeReminder.Infrastructure.Services;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+using Quartz;
 using System.Text;
 using Telegram.Bot;
 
-namespace DailyLeetcodeReminder.Infrastructure.BackgroundServices;
+namespace DailyLeetcodeReminder.Infrastructure.Jobs;
 
-public class DailyReportBackgroundService : BackgroundService
+public class DailyReportJob : IJob
 {
-    private Timer timer = null;
-    private readonly IServiceScopeFactory serviceScopeFactory;
+    private readonly IChallengerRepository challengerRepository;
+    private readonly ITelegramBotClient telegramBotClient;
+    private readonly ILeetCodeBroker leetcodeBroker;
+    private readonly IConfiguration configuration;
 
-    public DailyReportBackgroundService(
-        IServiceScopeFactory serviceScopeFactory)
+    public DailyReportJob(
+        IChallengerRepository challengerRepository,
+        ITelegramBotClient telegramBotClient,
+        ILeetCodeBroker leetcodeBroker,
+        IConfiguration configuration)
     {
-        this.serviceScopeFactory = serviceScopeFactory;        
+        this.challengerRepository = challengerRepository;
+        this.telegramBotClient = telegramBotClient;
+        this.leetcodeBroker = leetcodeBroker;
+        this.configuration = configuration;
     }
 
-    private async void GenerateReportAsync(object? state)
+    public async Task Execute(IJobExecutionContext context)
     {
-        using var scope = serviceScopeFactory.CreateScope();
+        long groupId = long.Parse(configuration
+            .GetSection("TelegramBot:GroupId").Value);
 
-        var challengerRepository = scope.ServiceProvider
-            .GetRequiredService<IChallengerRepository>();
-
-        var leetcodeBroker = scope.ServiceProvider
-            .GetRequiredService<ILeetCodeBroker>();
-
-        var telegramBotClient = scope.ServiceProvider
-            .GetRequiredService<ITelegramBotClient>();
-
-
-        // active challenger'lar ro'yxati
+        // select list of active challengers
         List<Challenger> activeChallengers = await challengerRepository
             .SelectActiveChallengersAsync();
 
         // get total solved problems from leetcode
-        foreach(var activeChallenger in activeChallengers)
+        foreach (var activeChallenger in activeChallengers)
         {
             var totalSolvedProblemsCount = await leetcodeBroker
                 .GetTotalSolvedProblemsCountAsync(activeChallenger.LeetcodeUserName);
@@ -48,7 +47,7 @@ public class DailyReportBackgroundService : BackgroundService
             int difference = totalSolvedProblemsCount - activeChallenger.TotalSolvedProblems;
 
             // if user hasn't solved any problem, decrease attempts count
-            if(difference == 0)
+            if (difference == 0)
             {
                 activeChallenger.Heart--;
             }
@@ -64,8 +63,11 @@ public class DailyReportBackgroundService : BackgroundService
                 activeChallenger.TotalSolvedProblems = totalSolvedProblemsCount;
             }
 
-            activeChallenger.DailyAttempts.First().SolvedProblems = difference;
-            
+            if (activeChallenger.DailyAttempts.Count() > 0)
+            {
+                activeChallenger.DailyAttempts.First().SolvedProblems = difference;
+            }
+
             // initialize the next day attempts
             activeChallenger.DailyAttempts.Add(new DailyAttempt
             {
@@ -77,11 +79,22 @@ public class DailyReportBackgroundService : BackgroundService
         await challengerRepository.SaveChangesAsync();
 
         // send report to the group
+        await SendDailyReportAsync(
+            telegramBotClient,
+            activeChallengers,
+            groupId);
+    }
+
+    private static async Task SendDailyReportAsync(
+        ITelegramBotClient telegramBotClient,
+        List<Challenger> activeChallengers,
+        long groupId)
+    {
         StringBuilder messageBuilder = new StringBuilder();
         messageBuilder.AppendLine("Report of today");
         messageBuilder.AppendLine("Username\t|Heart\t|Today\t|Total\n");
 
-        foreach(var challenger in activeChallengers)
+        foreach (var challenger in activeChallengers)
         {
             messageBuilder.Append($"{challenger.LeetcodeUserName}\t|");
             messageBuilder.Append($"{challenger.Heart}\t|");
@@ -89,16 +102,6 @@ public class DailyReportBackgroundService : BackgroundService
             messageBuilder.Append($"{challenger.TotalSolvedProblems}\n");
         }
 
-        long groupId = -10000000;
-
         await telegramBotClient.SendTextMessageAsync(groupId, messageBuilder.ToString());
-    }
-
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        var timeDiff = TimeOnly.Parse("00:00:00") - TimeOnly.FromDateTime(DateTime.Now);
-        this.timer = new Timer(GenerateReportAsync, null, timeDiff, TimeSpan.FromHours(24));
-
-        return Task.CompletedTask;
     }
 }

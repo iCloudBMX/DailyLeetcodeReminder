@@ -59,11 +59,11 @@ public class ChallengerRepository : IChallengerRepository
             "ch.LeetcodeUserName " +
             "from Challengers as ch " +
             "inner join DailyAttempts as d " +
-            $"on ch.TelegramId = d.UserId where d.Date = '{DateTime.Now.Date}' and d.SolvedProblems = 0";
+            $"on ch.TelegramId = d.UserId where d.Date = '{DateTime.Now.Date}' and d.SolvedProblems = 0 and ch.Status = 0";
 
         return await this.applicationDbContext
             .Set<ChallengerWithNoAttempt>()
-            .FromSqlRaw<ChallengerWithNoAttempt>(sql)
+            .FromSqlRaw(sql)
             .ToListAsync();
     }
 
@@ -73,7 +73,8 @@ public class ChallengerRepository : IChallengerRepository
             .Set<Challenger>()
             .Include(ch => ch.DailyAttempts
                 .Where(da => da.Date == DateTime.Now.Date.AddDays(-1)))
-            .Where(x => x.Status == UserStatus.Active)
+            .Where(ch => ch.Status == UserStatus.Active)
+            .Where(ch => ch.CreatedAt.Date < DateTime.Now.Date)
             .ToListAsync();
     }
 

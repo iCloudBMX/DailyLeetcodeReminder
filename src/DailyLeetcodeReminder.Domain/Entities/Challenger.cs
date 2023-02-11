@@ -11,6 +11,7 @@ public class Challenger
     public string? LastName { get; set; }
     public int TotalSolvedProblems { get; set; }
     public UserStatus Status { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public virtual ICollection<DailyAttempt> DailyAttempts { get; set; }
 }

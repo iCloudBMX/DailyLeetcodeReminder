@@ -1,5 +1,4 @@
 ﻿using DailyLeetcodeReminder.Domain.Entities;
-using DailyLeetcodeReminder.Infrastructure.Models;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
 using DailyLeetcodeReminder.Infrastructure.Services;
 

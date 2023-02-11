@@ -47,7 +47,7 @@ public class LeetCodeBroker : ILeetCodeBroker
             var contentString = await response.Content.ReadAsStringAsync();
             var jsonObject = JsonObject.Parse(contentString);
 
-            string? dailyChallengeUrl = jsonObject["data"]["activeDailyCodingChallengeQuestion"]["link"]
+            string? dailyChallengeUrl = jsonObject?["data"]?["activeDailyCodingChallengeQuestion"]["link"]
                 .GetValue<string>();
 
             if (string.IsNullOrEmpty(dailyChallengeUrl))
@@ -101,7 +101,7 @@ public class LeetCodeBroker : ILeetCodeBroker
             var contentString = await response.Content.ReadAsStringAsync();
             var jsonObject = JsonObject.Parse(contentString);
 
-            int? totalSolvedProblemsCount = jsonObject["data"]["matchedUser"]["submitStats"]["acSubmissionNum"]
+            int? totalSolvedProblemsCount = jsonObject?["data"]?["matchedUser"]?["submitStats"]["acSubmissionNum"]
                 .Deserialize<List<Submission>>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                 .Where(submission => submission.Difficulty == "All")
                 .Select(submission => submission.Count)
