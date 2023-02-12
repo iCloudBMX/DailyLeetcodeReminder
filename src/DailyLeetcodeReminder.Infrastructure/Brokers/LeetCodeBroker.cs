@@ -50,7 +50,7 @@ public class LeetCodeBroker : ILeetCodeBroker
             
             if(jsonObject?["errors"] is not null)
             {
-                throw new NotFaundLeetCodeUserNameException();
+                throw new NotFoundException();
             }
 
             string? dailyChallengeUrl = jsonObject?["data"]?["activeDailyCodingChallengeQuestion"]["link"]

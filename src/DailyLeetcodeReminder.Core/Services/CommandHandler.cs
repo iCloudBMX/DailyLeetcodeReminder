@@ -46,43 +46,33 @@ public class CommandHandler
 
             await task;
         }
-        catch(AlreadyExictException exception)
+        catch(AlreadyExistsException exception)
         {
             this.logger.LogError(exception.Message);
 
             await this.telegramBotClient.SendTextMessageAsync(
                 chatId: message.From.Id,
-                text: exception.Message);
+                text: "Siz allaqachon ro'yxatdan o'tgansiz");
 
             return;
         }
-        catch(NotFaundLeetCodeUserNameException exception)
+        catch(NotFoundException exception)
         {
             this.logger.LogError(exception.Message);
 
             await this.telegramBotClient.SendTextMessageAsync(
                 chatId: message.From.Id,
-                text: exception.Message);
+                text: "Kechirasiz usernameni tekshirib qayta urining, username topilmadi");
 
             return;
         }
-        catch(DuplicateTelegramIdException exception)
+        catch(DuplicateException exception)
         {
             this.logger.LogError(exception.Message);
 
             await this.telegramBotClient.SendTextMessageAsync(
                 chatId: message.From.Id,
-                text: exception.Message);
-
-            return;
-        }
-        catch(DuplicateLeetCodeUserNameException exception)
-        {
-            this.logger.LogError(exception.Message);
-
-            await this.telegramBotClient.SendTextMessageAsync(
-                chatId: message.From.Id,
-                text: exception.Message);
+                text: "Sizning telegram yoki leetcode profilingiz ro'yxatdan o'tgan");
 
             return;
         }

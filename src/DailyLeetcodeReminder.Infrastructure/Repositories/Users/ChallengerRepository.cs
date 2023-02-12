@@ -36,9 +36,37 @@ public class ChallengerRepository : IChallengerRepository
         var userEntityEntry = await this.applicationDbContext
             .Set<Challenger>()
             .AddAsync(challenger);
-        
-        await this.applicationDbContext
-            .SaveChangesAsync();
+        try
+        {
+            await this.applicationDbContext
+                .SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            if (ex.InnerException is SqlException sqlException)
+            {
+                if (sqlException.Number == 2601 && 
+                    sqlException.Message.Contains("LeetcodeUserName") &&
+                    sqlException.Message.Contains("TelegramId"))
+                {
+                    throw new AlreadyExistsException(challenger.TelegramId,challenger.LeetcodeUserName);
+                }
+                else if (sqlException.Number == 2601 && 
+                        sqlException.Message.Contains("TelegramId") ||
+                        sqlException.Message.Contains("LeetcodeUserName"))
+                {
+                    throw new DuplicateException(challenger.TelegramId,challenger.LeetcodeUserName);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            else
+            {
+                throw;
+            }
+        }
         
         return userEntityEntry.Entity;
     }
@@ -81,40 +109,7 @@ public class ChallengerRepository : IChallengerRepository
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        try
-        {
-            return await this.applicationDbContext
-                    .SaveChangesAsync(cancellationToken);
-        }
-        catch (DbUpdateException ex)
-        {
-            if (ex.InnerException is SqlException sqlException)
-            {
-                if (sqlException.Number == 2601 && 
-                    sqlException.Message.Contains("LeetcodeUserName") &&
-                    sqlException.Message.Contains("TelegramId"))
-                {
-                    throw new AlreadyExictException();
-                }
-                else if (sqlException.Number == 2601 && 
-                    sqlException.Message.Contains("LeetcodeUserName"))
-                {
-                    throw new DuplicateLeetCodeUserNameException();
-                }
-                else if (sqlException.Number == 2601 && 
-                        sqlException.Message.Contains("TelegramId"))
-                {
-                    throw new DuplicateTelegramIdException();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            else
-            {
-                throw;
-            }
-        }
+        return await this.applicationDbContext
+                .SaveChangesAsync(cancellationToken);
     }
 }
