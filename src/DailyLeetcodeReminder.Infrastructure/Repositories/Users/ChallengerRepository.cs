@@ -49,13 +49,13 @@ public class ChallengerRepository : IChallengerRepository
                     sqlException.Message.Contains("LeetcodeUserName") &&
                     sqlException.Message.Contains("TelegramId"))
                 {
-                    throw new AlreadyExistsException(challenger.TelegramId,challenger.LeetcodeUserName);
+                    throw new AlreadyExistsException(challenger.LeetcodeUserName);
                 }
                 else if (sqlException.Number == 2601 && 
                         sqlException.Message.Contains("TelegramId") ||
                         sqlException.Message.Contains("LeetcodeUserName"))
                 {
-                    throw new DuplicateException(challenger.TelegramId,challenger.LeetcodeUserName);
+                    throw new DuplicateException(challenger.LeetcodeUserName);
                 }
                 else
                 {

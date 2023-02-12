@@ -47,11 +47,6 @@ public class LeetCodeBroker : ILeetCodeBroker
 
             var contentString = await response.Content.ReadAsStringAsync();
             var jsonObject = JsonObject.Parse(contentString);
-            
-            if(jsonObject?["errors"] is not null)
-            {
-                throw new NotFoundException();
-            }
 
             string? dailyChallengeUrl = jsonObject?["data"]?["activeDailyCodingChallengeQuestion"]["link"]
                 .GetValue<string>();
@@ -106,6 +101,11 @@ public class LeetCodeBroker : ILeetCodeBroker
 
             var contentString = await response.Content.ReadAsStringAsync();
             var jsonObject = JsonObject.Parse(contentString);
+
+            if(jsonObject?["errors"] is not null)
+            {
+                throw new NotFoundException(leetcodeUsername);
+            }
 
             int? totalSolvedProblemsCount = jsonObject?["data"]?["matchedUser"]?["submitStats"]["acSubmissionNum"]
                 .Deserialize<List<Submission>>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
