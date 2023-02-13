@@ -23,11 +23,11 @@ public class AttemptRepository : IAttemptRepository
 
     public async Task MarkDailyAttemptsAsync(List<long> challengerIds)
     {
-        string sql = $"update DailyAttempts " +
-            $"set SolvedProblems = SolvedProblems + 1 " +
-            $"where UserId in ({string.Join(',', challengerIds)}) " +
-            $"and DailyAttempts.Date = '{DateOnly.FromDateTime(DateTime.Now)}'";
-        
+        string sql = @$"update ""DailyAttempts"" " +
+            @$"set ""SolvedProblems"" = ""SolvedProblems"" + 1 " +
+            @$"where ""UserId"" in ({string.Join(',', challengerIds)}) " +
+            @$"and ""Date"" = '{DateOnly.FromDateTime(DateTime.Now)}'";
+
         await this.applicationDbContext.Database.ExecuteSqlRawAsync(sql);
     }
 }
