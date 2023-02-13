@@ -3,8 +3,8 @@ using DailyLeetcodeReminder.Domain.Enums;
 using DailyLeetcodeReminder.Domain.Exceptions;
 using DailyLeetcodeReminder.Infrastructure.Contexts;
 using DailyLeetcodeReminder.Infrastructure.Jobs;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace DailyLeetcodeReminder.Infrastructure.Repositories;
 
@@ -43,15 +43,15 @@ public class ChallengerRepository : IChallengerRepository
         }
         catch (DbUpdateException ex)
         {
-            if (ex.InnerException is SqlException sqlException)
+            if (ex.InnerException is PostgresException sqlException)
             {
-                if (sqlException.Number == 2601 && 
+                if (sqlException.SqlState == "23505" && 
                     sqlException.Message.Contains("LeetcodeUserName") &&
                     sqlException.Message.Contains("TelegramId"))
                 {
                     throw new AlreadyExistsException(challenger.LeetcodeUserName);
                 }
-                else if (sqlException.Number == 2601 && 
+                else if (sqlException.SqlState == "23505" && 
                         sqlException.Message.Contains("TelegramId") ||
                         sqlException.Message.Contains("LeetcodeUserName"))
                 {
