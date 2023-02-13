@@ -126,6 +126,19 @@ public static class ServiceCollectionExtensions
                 .WithIdentity($"{dailyReportJobKey.Name}-trigger")
                 .WithCronSchedule("0 0 0 * * ?")
             );
+
+            var dailyTaskJobKey = new JobKey(nameof(DailyReportJob));
+
+            q.AddJob<DailyReportJob>(opts =>
+            {
+                opts.WithIdentity(dailyTaskJobKey);
+            });
+
+            q.AddTrigger(opts => opts
+                .ForJob(dailyTaskJobKey)
+                .WithIdentity($"{dailyTaskJobKey.Name}-trigger")
+                .WithCronSchedule("0 0 12 * * ?")
+            );
         });
         services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
