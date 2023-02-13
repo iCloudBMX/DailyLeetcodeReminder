@@ -10,106 +10,104 @@ namespace DailyLeetcodeReminder.Infrastructure.Repositories;
 
 public class ChallengerRepository : IChallengerRepository
 {
-    private readonly ApplicationDbContext applicationDbContext;
+  private readonly ApplicationDbContext applicationDbContext;
 
-    public ChallengerRepository(ApplicationDbContext applicationDbContext)
+  public ChallengerRepository(ApplicationDbContext applicationDbContext)
+  {
+    this.applicationDbContext = applicationDbContext;
+  }
+
+  public async Task<Challenger> SelectUserByTelegramIdAsync(long telegramId)
+  {
+    return await this.applicationDbContext
+        .Set<Challenger>()
+        .FirstOrDefaultAsync(x => x.TelegramId == telegramId);
+  }
+
+  public async Task<Challenger> SelectUserByLeetcodeUsernameAsync(string leetcodeUsername)
+  {
+    return await this.applicationDbContext
+        .Set<Challenger>()
+        .FirstOrDefaultAsync(x => x.LeetcodeUserName == leetcodeUsername);
+  }
+
+  public async Task<Challenger> InsertChallengerAsync(Challenger challenger)
+  {
+    var userEntityEntry = await this.applicationDbContext
+        .Set<Challenger>()
+        .AddAsync(challenger);
+    try
     {
-        this.applicationDbContext = applicationDbContext;
+      await this.applicationDbContext
+          .SaveChangesAsync();
     }
-
-    public async Task<Challenger> SelectUserByTelegramIdAsync(long telegramId)
+    catch (DbUpdateException ex)
     {
-        return await this.applicationDbContext
-            .Set<Challenger>()
-            .FirstOrDefaultAsync(x => x.TelegramId == telegramId);
-    }
-
-    public async Task<Challenger> SelectUserByLeetcodeUsernameAsync(string leetcodeUsername)
-    {
-        return await this.applicationDbContext
-            .Set<Challenger>()
-            .FirstOrDefaultAsync(x => x.LeetcodeUserName == leetcodeUsername);
-    }
-
-    public async Task<Challenger> InsertChallengerAsync(Challenger challenger)
-    {
-        var userEntityEntry = await this.applicationDbContext
-            .Set<Challenger>()
-            .AddAsync(challenger);
-        try
+      if (ex.InnerException is PostgresException pgException)
+      {
+        if (pgException.SqlState == "23505" &&
+            pgException.Message.Contains("PK_Challengers"))
         {
-            await this.applicationDbContext
-                .SaveChangesAsync();
+          throw new AlreadyExistsException(challenger.LeetcodeUserName);
         }
-        catch (DbUpdateException ex)
+        else if (pgException.SqlState == "23505" &&
+                 pgException.Message.Contains("IX_Challengers_LeetcodeUserName"))
         {
-            if (ex.InnerException is PostgresException sqlException)
-            {
-                if (sqlException.SqlState == "23505" && 
-                    sqlException.Message.Contains("LeetcodeUserName") &&
-                    sqlException.Message.Contains("TelegramId"))
-                {
-                    throw new AlreadyExistsException(challenger.LeetcodeUserName);
-                }
-                else if (sqlException.SqlState == "23505" && 
-                        sqlException.Message.Contains("TelegramId") ||
-                        sqlException.Message.Contains("LeetcodeUserName"))
-                {
-                    throw new DuplicateException(challenger.LeetcodeUserName);
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            else
-            {
-                throw;
-            }
+          throw new DuplicateException(challenger.LeetcodeUserName);
         }
-        
-        return userEntityEntry.Entity;
+        else
+        {
+          throw;
+        }
+      }
+      else
+      {
+        throw;
+      }
     }
 
-    public async Task UpdateChallengerAsync(Challenger challenger)
+    return userEntityEntry.Entity;
+  }
+
+  public async Task UpdateChallengerAsync(Challenger challenger)
+  {
+    this.applicationDbContext
+        .Set<Challenger>()
+        .Update(challenger);
+
+    await this.SaveChangesAsync();
+  }
+
+  public async Task<List<ChallengerWithNoAttempt>> SelectUsersWithNoAttemptsAsync()
+  {
+    return await this.applicationDbContext
+    .Set<Challenger>()
+    .Include(ch => ch.DailyAttempts
+        .Where(da => da.Date == DateTime.Now.Date.AddDays(-1))
+        .Where(da => da.SolvedProblems == 0))
+    .Where(ch => ch.Status == UserStatus.Active)
+    .Select(ch => new ChallengerWithNoAttempt
     {
-        this.applicationDbContext
-            .Set<Challenger>()
-            .Update(challenger);
+      LeetcodeUserName = ch.LeetcodeUserName,
+      TelegramId = ch.TelegramId,
+      TotalSolvedProblems = ch.TotalSolvedProblems
+    })
+    .ToListAsync();
+  }
 
-        await this.SaveChangesAsync();
-    }
+  public async Task<List<Challenger>> SelectActiveChallengersAsync()
+  {
+    return await this.applicationDbContext
+        .Set<Challenger>()
+        .Include(ch => ch.DailyAttempts
+            .Where(da => da.Date == DateTime.Now.Date.AddDays(-1)))
+        .Where(ch => ch.Status == UserStatus.Active)
+        .ToListAsync();
+  }
 
-    public async Task<List<ChallengerWithNoAttempt>> SelectUsersWithNoAttemptsAsync()
-    {
-            return await this.applicationDbContext
-            .Set<Challenger>()
-            .Include(ch => ch.DailyAttempts
-                .Where(da => da.Date == DateTime.Now.Date.AddDays(-1))
-                .Where(da => da.SolvedProblems == 0))
-            .Where(ch => ch.Status == UserStatus.Active)
-            .Select(ch => new ChallengerWithNoAttempt
-            {
-                LeetcodeUserName = ch.LeetcodeUserName,
-                TelegramId = ch.TelegramId,
-                TotalSolvedProblems = ch.TotalSolvedProblems
-            })
-            .ToListAsync();
-    }
-
-    public async Task<List<Challenger>> SelectActiveChallengersAsync()
-    {
-        return await this.applicationDbContext
-            .Set<Challenger>()
-            .Include(ch => ch.DailyAttempts
-                .Where(da => da.Date == DateTime.Now.Date.AddDays(-1)))
-            .Where(ch => ch.Status == UserStatus.Active)
-            .ToListAsync();
-    }
-
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        return await this.applicationDbContext
-                .SaveChangesAsync(cancellationToken);
-    }
+  public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+  {
+    return await this.applicationDbContext
+            .SaveChangesAsync(cancellationToken);
+  }
 }
