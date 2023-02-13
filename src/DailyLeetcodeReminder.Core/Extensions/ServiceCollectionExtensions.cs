@@ -7,6 +7,7 @@ using DailyLeetcodeReminder.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
 using Telegram.Bot;
+using Npgsql;
 
 namespace DailyLeetcodeReminder.Core.Extensions;
 
@@ -17,8 +18,7 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration)
     {
 
-        string botApiKey = configuration
-            .GetSection("TelegramBot:ApiKey").Value;
+        string botApiKey = Environment.GetEnvironmentVariable("BOT_API_KEY");
 
         services.AddSingleton<ITelegramBotClient, TelegramBotClient>(x => new TelegramBotClient(botApiKey));
 
@@ -39,8 +39,21 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContextPool<ApplicationDbContext>(options =>
         {
-            options.UseNpgsql(
-                connectionString: configuration.GetConnectionString("PostgreSqlConnectionString"));
+            string connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+            var databaseUri = new Uri(connectionString);
+            var userInfo = databaseUri.UserInfo.Split(':');
+
+            var builder = new NpgsqlConnectionStringBuilder
+            {
+                Host = databaseUri.Host,
+                Port = databaseUri.Port,
+                Username = userInfo[0],
+                Password = userInfo[1],
+                Database = databaseUri.LocalPath.TrimStart('/')
+            };
+
+            options.UseNpgsql(connectionString: builder.ToString());
         });
 
         services.AddScoped<IChallengerRepository, ChallengerRepository>();

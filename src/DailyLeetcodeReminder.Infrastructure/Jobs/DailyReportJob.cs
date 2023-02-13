@@ -31,8 +31,7 @@ public class DailyReportJob : IJob
 
     public async Task Execute(IJobExecutionContext context)
     {
-        long groupId = long.Parse(configuration
-            .GetSection("TelegramBot:GroupId").Value);
+        long groupId = long.Parse(Environment.GetEnvironmentVariable("GROUP_ID"));
 
         // select list of active challengers
         List<Challenger> activeChallengers = await challengerRepository
