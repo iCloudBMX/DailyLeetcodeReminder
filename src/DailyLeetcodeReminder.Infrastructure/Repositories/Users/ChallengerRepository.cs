@@ -112,4 +112,11 @@ public class ChallengerRepository : IChallengerRepository
         return await this.applicationDbContext
                 .SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<List<long>> SelectAllUsersTelegramIdAsync()
+    {
+        return await applicationDbContext.Set<Challenger>()
+            .Select(user => user.TelegramId)
+            .ToListAsync();
+    }
 }

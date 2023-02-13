@@ -10,6 +10,6 @@ public interface IChallengerRepository
     Task UpdateChallengerAsync(Challenger challenger);
     Task<List<ChallengerWithNoAttempt>> SelectUsersWithNoAttemptsAsync();
     Task<List<Challenger>> SelectActiveChallengersAsync();
-
+    Task<List<long>> SelectAllUsersTelegramIdAsync();
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
