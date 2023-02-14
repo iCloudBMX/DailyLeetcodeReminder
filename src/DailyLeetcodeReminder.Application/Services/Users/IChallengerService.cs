@@ -8,4 +8,6 @@ public interface IChallengerService
     Task<Challenger> RetrieveChallengerByTelegramIdAsync(long telegramId);
     Task<Challenger> RetrieveChallengerByLeetcodeUsernameAsync(string leetcodeUsername);
     Task<Challenger> ModifyChallengerAsync(Challenger challenger);
+
+    Task<List<Challenger>> RetrieveChallengers();
 }

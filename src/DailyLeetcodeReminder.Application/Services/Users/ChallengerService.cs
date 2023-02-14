@@ -77,4 +77,9 @@ public class ChallengerService : IChallengerService
 
         return storageChallenger;
     }
+
+    public async Task<List<Challenger>> RetrieveChallengers()
+    {
+        return await challengerRepository.SelectActiveChallengersAsync();
+    }
 }
