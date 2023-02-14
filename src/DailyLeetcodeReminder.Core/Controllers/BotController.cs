@@ -11,10 +11,10 @@ public class BotController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post(
         [FromBody] Update update,
-        [FromServices] CommandHandler commandHandler)
+        [FromServices] UpdateHandler updateHandler)
     {
-        await commandHandler
-            .HandleCommandAsync(update);
+        await updateHandler
+            .UpdateHandlerAsync(update);
 
         return Ok();
     }
