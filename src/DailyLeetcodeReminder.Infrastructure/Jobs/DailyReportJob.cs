@@ -101,18 +101,38 @@ public class DailyReportJob : IJob
         List<Challenger> activeChallengers,
         long groupId)
     {
-        StringBuilder messageBuilder = new StringBuilder();
-        messageBuilder.AppendLine("Report of today");
-        messageBuilder.AppendLine("Username\t|Heart\t|Today\t|Total\n");
+        string messageBuilder = SendDailyReport(activeChallengers: activeChallengers);
+
+        await telegramBotClient.SendTextMessageAsync(chatId: groupId, text: messageBuilder);
+    }
+    private static string SendDailyReport(List<Challenger> activeChallengers)
+    {
+        StringBuilder messageBuilder = new();
+
+        messageBuilder.AppendLine($"Report of  ({DateTime.Now.ToString("dd.MMMM.yyyy")})\n");
+
+        messageBuilder.AppendLine($"<pre>|{new string('-', 22)}" +
+                                       $"|{new string('-', 7)}" +
+                                       $"|{new string('-', 7)}" +
+                                       $"|{new string('-', 7)}|");
+
+        messageBuilder.AppendLine(String.Format("| {0, -20} | {1, -6}| {2, -6}| {3, -6}|",
+                                                "UserName", "Heart", "Today", "Total"));
+
+        messageBuilder.AppendLine($"|{new string('-', 22)}" +
+                                  $"|{new string('-', 7)}" +
+                                  $"|{new string('-', 7)}" +
+                                  $"|{new string('-', 7)}|");
 
         foreach (var challenger in activeChallengers)
         {
-            messageBuilder.Append($"{challenger.LeetcodeUserName}\t|");
-            messageBuilder.Append($"{challenger.Heart}\t|");
-            messageBuilder.Append($"{challenger.DailyAttempts.First().SolvedProblems}\t|");
-            messageBuilder.Append($"{challenger.TotalSolvedProblems}\n");
+            messageBuilder.AppendLine(String.Format("| {0, -20} | {1, -6}| {2, -6}| {3, -6}|",
+                        challenger.LeetcodeUserName,
+                        challenger.Heart,
+                        challenger.DailyAttempts.First().SolvedProblems,
+                        challenger.TotalSolvedProblems));
         }
 
-        await telegramBotClient.SendTextMessageAsync(groupId, messageBuilder.ToString());
+        return messageBuilder.ToString() + "</pre>";
     }
 }
