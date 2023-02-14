@@ -1,4 +1,5 @@
 ﻿using DailyLeetcodeReminder.Domain.Exceptions;
+using DailyLeetcodeReminder.Infrastructure.Brokers;
 using DailyLeetcodeReminder.Infrastructure.Models;
 using System.Text;
 using System.Text.Json;
@@ -16,7 +17,7 @@ public class LeetCodeBroker : ILeetCodeBroker
         this.httpClientFactory = httpClientFactory;
     }
 
-    public async Task<string> GetDailyChallengeUrlAsync()
+    public async Task<DailyProblem> GetDailyProblemAsync()
     {
         using (var httpClient = this.httpClientFactory
             .CreateClient("leetcode"))
@@ -26,9 +27,18 @@ public class LeetCodeBroker : ILeetCodeBroker
                 Query = @"
                     query questionOfToday {
                         activeDailyCodingChallengeQuestion {
+                            date
                             link
+                            question{
+                                difficulty
+                                title
+                                topicTags {
+                                 name
+                                }
+                            }
                         }
                     }"
+
             };
 
             var requestContent = new StringContent(
@@ -47,18 +57,14 @@ public class LeetCodeBroker : ILeetCodeBroker
 
             var contentString = await response.Content.ReadAsStringAsync();
             var jsonObject = JsonObject.Parse(contentString);
+            var dailyProblem = new DailyProblem();
+            MapToDailyProblem(jsonObject, dailyProblem);
+            CheckLink(dailyProblem);
 
-            string? dailyChallengeUrl = jsonObject?["data"]?["activeDailyCodingChallengeQuestion"]["link"]
-                .GetValue<string>();
-
-            if (string.IsNullOrEmpty(dailyChallengeUrl))
-            {
-                throw new Exception("Failed to retrieve daily challenge url");
-            }
-
-            return dailyChallengeUrl;
+            return dailyProblem;
         }
     }
+
 
     public async Task<int> GetTotalSolvedProblemsCountAsync(string leetcodeUsername)
     {
@@ -102,7 +108,7 @@ public class LeetCodeBroker : ILeetCodeBroker
             var contentString = await response.Content.ReadAsStringAsync();
             var jsonObject = JsonObject.Parse(contentString);
 
-            if(jsonObject?["errors"] is not null)
+            if (jsonObject?["errors"] is not null)
             {
                 throw new NotFoundException(leetcodeUsername);
             }
@@ -121,4 +127,44 @@ public class LeetCodeBroker : ILeetCodeBroker
             return totalSolvedProblemsCount.Value;
         }
     }
+    private static void MapToDailyProblem(JsonNode? jsonObject, DailyProblem dailyProblem)
+    {
+        dailyProblem.Link = jsonObject?["data"]?
+                                       ["activeDailyCodingChallengeQuestion"]?
+                                       ["link"]
+                                       .GetValue<string>();
+
+        dailyProblem.Difficulty = jsonObject?["data"]?
+                                             ["activeDailyCodingChallengeQuestion"]?
+                                             ["question"]
+                                             ["difficulty"]
+                                             .GetValue<string>();
+
+        dailyProblem.Title = jsonObject?["data"]?
+                                        ["activeDailyCodingChallengeQuestion"]?
+                                        ["question"]
+                                        ["title"]
+                                        .GetValue<string>();
+
+        var tagsList = jsonObject?["data"]?
+                                  ["activeDailyCodingChallengeQuestion"]?
+                                  ["question"]
+                                  ["topicTags"];
+
+        dailyProblem.Tags = string.Join(", ", tagsList.AsArray().Select(tag => tag["name"]));
+
+        dailyProblem.Date = jsonObject?["data"]?
+                                       ["activeDailyCodingChallengeQuestion"]?
+                                       ["date"]
+                                       .GetValue<string>();
+
+    }
+    private static void CheckLink(DailyProblem dailyProblem)
+    {
+        if (string.IsNullOrEmpty(dailyProblem.Link))
+        {
+            throw new Exception("Failed to retrieve daily challenge url");
+        }
+    }
+
 }

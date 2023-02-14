@@ -15,18 +15,15 @@ public class DailyReportJob : IJob
     private readonly IChallengerRepository challengerRepository;
     private readonly ITelegramBotClient telegramBotClient;
     private readonly ILeetCodeBroker leetcodeBroker;
-    private readonly IConfiguration configuration;
 
     public DailyReportJob(
         IChallengerRepository challengerRepository,
         ITelegramBotClient telegramBotClient,
-        ILeetCodeBroker leetcodeBroker,
-        IConfiguration configuration)
+        ILeetCodeBroker leetcodeBroker)
     {
         this.challengerRepository = challengerRepository;
         this.telegramBotClient = telegramBotClient;
         this.leetcodeBroker = leetcodeBroker;
-        this.configuration = configuration;
     }
 
     public async Task Execute(IJobExecutionContext context)
