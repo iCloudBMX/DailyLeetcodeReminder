@@ -1,9 +1,10 @@
-﻿using DailyLeetcodeReminder.Infrastructure.Models;
+﻿using DailyLeetcodeReminder.Infrastructure.Brokers;
+using DailyLeetcodeReminder.Infrastructure.Models;
 
 namespace DailyLeetcodeReminder.Infrastructure.Services;
 
 public interface ILeetCodeBroker
 {
     Task<int> GetTotalSolvedProblemsCountAsync(string leetcodeUsername);
-    Task<string> GetDailyChallengeUrlAsync();
+    Task<DailyProblem> GetDailyProblemAsync();
 }
