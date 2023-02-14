@@ -1,34 +1,63 @@
 ﻿using DailyLeetcodeReminder.Application.Services;
-using DailyLeetcodeReminder.Domain.Enums;
-using Telegram.Bot.Types;
 using DailyLeetcodeReminder.Domain.Entities;
-using Telegram.Bot;
+using DailyLeetcodeReminder.Domain.Enums;
 using DailyLeetcodeReminder.Domain.Exceptions;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+
 
 namespace DailyLeetcodeReminder.Core.Services;
 
-public class CommandHandler
+public class UpdateHandler
 {
     private readonly IChallengerService challengerService;
     private readonly ITelegramBotClient telegramBotClient;
-    private readonly ILogger<CommandHandler> logger;
+    private readonly ILogger<UpdateHandler> logger;
+    private static int pageSize = 10;
 
-    public CommandHandler(
+    public UpdateHandler(
         IChallengerService challengerService,
         ITelegramBotClient telegramBotClient,
-        ILogger<CommandHandler> logger)
+        ILogger<UpdateHandler> logger)
     {
         this.challengerService = challengerService;
         this.telegramBotClient = telegramBotClient;
         this.logger = logger;
     }
 
-    public async Task HandleCommandAsync(Update update)
+    public async Task UpdateHandlerAsync(Update update)
     {
+        var handler = update.Type switch
+        {
+            UpdateType.Message => HandleCommandAsync(update.Message),
+            UpdateType.CallbackQuery => OnCallbackQueryReceivedAsync(update.CallbackQuery),
+            _ => HandleNotAvailableCommandAsync(update.Message)
+        };
 
-        var message = update.Message;
+        await handler;
+    }
 
-        if (message == null || !message.Text.StartsWith("/"))
+    private async Task OnCallbackQueryReceivedAsync(CallbackQuery callbackQuery)
+    {
+        var challengers = await challengerService.RetrieveChallengers();
+
+        int page = int.Parse(callbackQuery.Data);
+
+        var sortedChallengers = challengers.OrderByDescending(ch => ch.TotalSolvedProblems)
+            .Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        await telegramBotClient.EditMessageTextAsync(
+            chatId: callbackQuery.Message.Chat.Id,
+            messageId: callbackQuery.Message.MessageId,
+            text: $"<b>{ServiceHelper.TableBuilder(sortedChallengers)}</b>",
+            replyMarkup: ServiceHelper.GenerateButtons(challengers.Count / pageSize),
+            parseMode: ParseMode.Html);
+    }
+
+    public async Task HandleCommandAsync(Message message)
+    {
+        if (!message.Text.StartsWith("/"))
         {
             return;
         }
@@ -41,12 +70,13 @@ public class CommandHandler
             {
                 "start" => HandleStartCommandAsync(message),
                 "register" => HandleRegisterCommandAsync(message),
+                "rank" => HandleRankCommandAsync(message),
                 _ => HandleNotAvailableCommandAsync(message)
             };
 
             await task;
         }
-        catch(AlreadyExistsException exception)
+        catch (AlreadyExistsException exception)
         {
             this.logger.LogError(exception.Message);
 
@@ -56,7 +86,7 @@ public class CommandHandler
 
             return;
         }
-        catch(NotFoundException exception)
+        catch (NotFoundException exception)
         {
             this.logger.LogError(exception.Message);
 
@@ -66,7 +96,7 @@ public class CommandHandler
 
             return;
         }
-        catch(DuplicateException exception)
+        catch (DuplicateException exception)
         {
             this.logger.LogError(exception.Message);
 
@@ -76,7 +106,7 @@ public class CommandHandler
 
             return;
         }
-        catch(Exception exception)
+        catch (Exception exception)
         {
             this.logger.LogError(exception.Message);
 
@@ -109,7 +139,7 @@ public class CommandHandler
     private async Task HandleRegisterCommandAsync(Message message)
     {
         var leetCodeUsername = message.Text?.Split(' ').Skip(1).FirstOrDefault();
-        
+
         if (string.IsNullOrWhiteSpace(leetCodeUsername))
         {
             await this.telegramBotClient.SendTextMessageAsync(
@@ -134,5 +164,20 @@ public class CommandHandler
         await this.telegramBotClient.SendTextMessageAsync(
             chatId: insertedChallenger.TelegramId,
             text: "You have successfully registered");
+    }
+
+    private async Task HandleRankCommandAsync(Message message)
+    {
+        var challengers = await challengerService.RetrieveChallengers();
+        
+        var sortedChallengers = challengers
+        .OrderByDescending(ch => ch.TotalSolvedProblems)
+        .Skip(0).Take(10).ToList();
+
+        await telegramBotClient.SendTextMessageAsync(
+            chatId: message.Chat.Id,
+            text: $"<b>{ServiceHelper.TableBuilder(sortedChallengers)}</b>",
+            replyMarkup: ServiceHelper.GenerateButtons(challengers.Count / 10),
+            parseMode: ParseMode.Html);
     }
 }

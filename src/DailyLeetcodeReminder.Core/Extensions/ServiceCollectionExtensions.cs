@@ -64,10 +64,10 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddComamndHandler(
+    public static IServiceCollection AddUpdateHandler(
         this IServiceCollection services)
     {
-        services.AddTransient<CommandHandler>();
+        services.AddTransient<UpdateHandler>();
 
         return services;
     }

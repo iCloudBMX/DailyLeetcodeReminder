@@ -15,7 +15,7 @@ namespace DailyLeetcodeReminder
             builder.Services
                 .AddApplication()
                 .AddInfrastructure(builder.Configuration)
-                .AddComamndHandler()
+                .AddUpdateHandler()
                 .AddTelegramBotClient(builder.Configuration)
                 .AddSwagger()
                 .AddControllerMappers()
