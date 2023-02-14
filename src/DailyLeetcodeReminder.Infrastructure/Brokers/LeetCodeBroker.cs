@@ -65,7 +65,6 @@ public class LeetCodeBroker : ILeetCodeBroker
         }
     }
 
-
     public async Task<int> GetTotalSolvedProblemsCountAsync(string leetcodeUsername)
     {
         using (var httpClient = this.httpClientFactory
