@@ -33,10 +33,12 @@ namespace DailyLeetcodeReminder.Infrastructure.Jobs
             builder.AppendLine($"<b>Problem</b> - <a href=\"https://leetcode.com{dailyProblem.Link}\">{dailyProblem.Title}</a>");
             builder.AppendLine($"<b>Tags</b> - {dailyProblem.Tags}");
 
-            await telegramBotClient.SendTextMessageAsync(
-                        chatId: groupId,
-                        text: builder.ToString(),
-                        parseMode: ParseMode.Html);
+            var message = await telegramBotClient.SendTextMessageAsync(
+                            chatId: groupId,
+                            text: builder.ToString(),
+                            parseMode: ParseMode.Html);
+
+            await telegramBotClient.PinChatMessageAsync(groupId, message.MessageId);
         }
     }
 }
