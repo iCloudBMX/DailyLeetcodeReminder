@@ -41,8 +41,22 @@ public class UpdateHandler
     private async Task OnCallbackQueryReceivedAsync(CallbackQuery callbackQuery)
     {
         var challengers = await challengerService.RetrieveChallengers();
+        
+        int pageCount = challengers.Count / pageSize  + 
+            (challengers.Count % pageSize > 0 ? 1 : 0);
 
-        int page = int.Parse(callbackQuery.Data);
+        string[] callQueries = callbackQuery.Data.Split(' ');
+
+        int page = int.Parse(callQueries[1]);
+
+        if (callQueries[0] == "next")
+        {
+            page += (page < pageCount) ? 1 : 0;
+        }
+        else
+        {
+            page -= (page > 0) ? 1 : 0;
+        }
 
         var sortedChallengers = challengers.OrderByDescending(ch => ch.TotalSolvedProblems)
             .Skip((page - 1) * pageSize).Take(pageSize).ToList();
@@ -51,7 +65,7 @@ public class UpdateHandler
             chatId: callbackQuery.Message.Chat.Id,
             messageId: callbackQuery.Message.MessageId,
             text: $"<b>{ServiceHelper.TableBuilder(sortedChallengers)}</b>",
-            replyMarkup: ServiceHelper.GenerateButtons(challengers.Count / pageSize),
+            replyMarkup: ServiceHelper.GenerateButtons(page),
             parseMode: ParseMode.Html);
     }
 
