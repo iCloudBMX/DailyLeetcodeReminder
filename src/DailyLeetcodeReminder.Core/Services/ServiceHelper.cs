@@ -8,20 +8,17 @@ public static class ServiceHelper
 {
     public static InlineKeyboardMarkup GenerateButtons(int page)
     {
-        var buttons = new List<List<InlineKeyboardButton>>();
-
-        for (int index = 0; index <= page; index++)
+        var buttons = new List<InlineKeyboardButton>()
         {
-            if (index % 3 == 0)
-                buttons.Add(new List<InlineKeyboardButton>());
-
-            buttons[index / 3].Add(
-                new InlineKeyboardButton($"{index + 1}")
-                {
-                    CallbackData = $"{index + 1}"
-                }
-            );
-        }
+            new InlineKeyboardButton("⏪")
+            {
+                CallbackData = $"prev {page}"
+            },
+            new InlineKeyboardButton("⏩")
+            {
+                CallbackData = $"next {page}"
+            }
+        };
 
         return new InlineKeyboardMarkup(buttons);
     }
