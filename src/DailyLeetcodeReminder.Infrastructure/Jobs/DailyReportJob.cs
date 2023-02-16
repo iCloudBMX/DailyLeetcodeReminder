@@ -100,7 +100,10 @@ public class DailyReportJob : IJob
     {
         string messageBuilder = SendDailyReport(activeChallengers: activeChallengers);
 
-        await telegramBotClient.SendTextMessageAsync(chatId: groupId, text: messageBuilder);
+        await telegramBotClient.SendTextMessageAsync(
+            chatId: groupId, 
+            text: messageBuilder,
+            parseMode: ParseMode.Html);
     }
     private static string SendDailyReport(List<Challenger> activeChallengers)
     {
