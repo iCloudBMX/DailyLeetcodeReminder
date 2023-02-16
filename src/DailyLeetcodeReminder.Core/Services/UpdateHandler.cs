@@ -3,6 +3,7 @@ using DailyLeetcodeReminder.Domain.Entities;
 using DailyLeetcodeReminder.Domain.Enums;
 using DailyLeetcodeReminder.Domain.Exceptions;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -55,18 +56,29 @@ public class UpdateHandler
         }
         else
         {
-            page -= (page > 0) ? 1 : 0;
+            page -= (page > 1) ? 1 : 0;
         }
 
         var sortedChallengers = challengers.OrderByDescending(ch => ch.TotalSolvedProblems)
             .Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-        await telegramBotClient.EditMessageTextAsync(
-            chatId: callbackQuery.Message.Chat.Id,
-            messageId: callbackQuery.Message.MessageId,
-            text: $"<b>{ServiceHelper.TableBuilder(sortedChallengers)}</b>",
-            replyMarkup: ServiceHelper.GenerateButtons(page),
-            parseMode: ParseMode.Html);
+        try
+        {
+            await telegramBotClient.EditMessageTextAsync(
+                chatId: callbackQuery.Message.Chat.Id,
+                messageId: callbackQuery.Message.MessageId,
+                text: $"<b>{ServiceHelper.TableBuilder(sortedChallengers)}</b>",
+                replyMarkup: ServiceHelper.GenerateButtons(page),
+                parseMode: ParseMode.Html);
+        }
+        catch (Exception exception)
+        {
+            this.logger.LogError(exception.Message);
+
+            await telegramBotClient.AnswerCallbackQueryAsync(
+                callbackQueryId: callbackQuery.Id,
+                text: "Page not found");
+        }
     }
 
     public async Task HandleCommandAsync(Message message)
