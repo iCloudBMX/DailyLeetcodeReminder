@@ -79,19 +79,15 @@ public class DailyReportJob : IJob
             if (activeChallenger.DailyAttempts.Count() > 0)
             {
                 activeChallenger.DailyAttempts.First().SolvedProblems = difference;
-
-                this.logger.LogInformation($"Solved problems: {activeChallenger.DailyAttempts.First().SolvedProblems}");   
             }
 
             // initialize the next day attempts
             activeChallenger.DailyAttempts.Add(new DailyAttempt
             {
                 UserId = activeChallenger.TelegramId,
-                Date = DateTime.Now.Date.AddDays(1),
+                Date = DateTime.Now.Date,
                 SolvedProblems = 0
             });
-
-            this.logger.LogInformation($"Attempts: {string.Join(" ", activeChallenger.DailyAttempts.Select(d => d.SolvedProblems))}");   
         }
 
         await challengerRepository.SaveChangesAsync();
@@ -140,9 +136,7 @@ public class DailyReportJob : IJob
                         challenger.LeetcodeUserName,
                         challenger.Heart,
                         challenger.DailyAttempts.First().SolvedProblems,
-                        challenger.TotalSolvedProblems));
-
-            this.logger.LogInformation($"Report: {string.Join(" ", challenger.DailyAttempts.First().SolvedProblems)}");   
+                        challenger.TotalSolvedProblems)); 
         }
 
         return messageBuilder.ToString() + "</pre>";
