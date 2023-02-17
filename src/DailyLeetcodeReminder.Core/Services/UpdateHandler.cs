@@ -96,7 +96,7 @@ public class UpdateHandler
                 "start" => HandleStartCommandAsync(message),
                 "register" => HandleRegisterCommandAsync(message),
                 "rank" => HandleRankCommandAsync(message),
-                "statistic" => CurrentUserStatisticAsync(message),
+                "statistics" => CurrentUserStatisticAsync(message),
                 _ => HandleNotAvailableCommandAsync(message)
             }; ;
 
