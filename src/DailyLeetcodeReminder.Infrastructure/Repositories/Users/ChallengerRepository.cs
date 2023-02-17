@@ -100,7 +100,7 @@ public class ChallengerRepository : IChallengerRepository
     return await this.applicationDbContext
         .Set<Challenger>()
         .Include(ch => ch.DailyAttempts
-            .Where(da => da.Date == DateTime.Now.Date.AddDays(-1)))
+            .Where(da => da.Date == DateTime.Now.Date))
         .Where(ch => ch.Status == UserStatus.Active)
         .ToListAsync();
   }

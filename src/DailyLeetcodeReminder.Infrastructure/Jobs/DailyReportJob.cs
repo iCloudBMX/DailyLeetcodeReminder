@@ -86,7 +86,7 @@ public class DailyReportJob : IJob
             // initialize the next day attempts
             activeChallenger.DailyAttempts.Add(new DailyAttempt
             {
-                Date = DateTime.Now.Date,
+                Date = DateTime.Now.Date.AddDays(1),
                 SolvedProblems = 0
             });
 
