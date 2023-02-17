@@ -31,6 +31,7 @@ namespace DailyLeetcodeReminder.Infrastructure.Jobs
             StringBuilder builder = new StringBuilder();
             builder.AppendLine($"<b>Daily problem</b> - {dailyProblem.Date}");
             builder.AppendLine($"<b>Problem</b> - <a href=\"https://leetcode.com{dailyProblem.Link}\">{dailyProblem.Title}</a>");
+            builder.AppendLine($"<b>Difficulty</b> - {dailyProblem.Difficulty}");
             builder.AppendLine($"<b>Tags</b> - {dailyProblem.Tags}");
 
             var message = await telegramBotClient.SendTextMessageAsync(
