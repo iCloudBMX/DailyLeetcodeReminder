@@ -3,9 +3,11 @@ using DailyLeetcodeReminder.Domain.Enums;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
 using DailyLeetcodeReminder.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Quartz;
 using System.Text;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace DailyLeetcodeReminder.Infrastructure.Jobs;
@@ -15,15 +17,18 @@ public class DailyReportJob : IJob
     private readonly IChallengerRepository challengerRepository;
     private readonly ITelegramBotClient telegramBotClient;
     private readonly ILeetCodeBroker leetcodeBroker;
+    private readonly ILogger<DailyReportJob> logger;
 
     public DailyReportJob(
         IChallengerRepository challengerRepository,
         ITelegramBotClient telegramBotClient,
-        ILeetCodeBroker leetcodeBroker)
+        ILeetCodeBroker leetcodeBroker,
+        ILogger<DailyReportJob> logger)
     {
         this.challengerRepository = challengerRepository;
         this.telegramBotClient = telegramBotClient;
         this.leetcodeBroker = leetcodeBroker;
+        this.logger = logger;
     }
 
     public async Task Execute(IJobExecutionContext context)
@@ -74,6 +79,8 @@ public class DailyReportJob : IJob
             if (activeChallenger.DailyAttempts.Count() > 0)
             {
                 activeChallenger.DailyAttempts.First().SolvedProblems = difference;
+
+                this.logger.LogInformation($"Solved problems: {activeChallenger.DailyAttempts.First().SolvedProblems}");   
             }
 
             // initialize the next day attempts
@@ -82,6 +89,8 @@ public class DailyReportJob : IJob
                 Date = DateTime.Now.Date,
                 SolvedProblems = 0
             });
+
+            this.logger.LogInformation($"Attempts: {string.Join(" ", activeChallenger.DailyAttempts.Select(d => d.SolvedProblems))}");   
         }
 
         await challengerRepository.SaveChangesAsync();
@@ -93,7 +102,7 @@ public class DailyReportJob : IJob
             groupId);
     }
 
-    private static async Task SendDailyReportAsync(
+    private async Task SendDailyReportAsync(
         ITelegramBotClient telegramBotClient,
         List<Challenger> activeChallengers,
         long groupId)
@@ -105,7 +114,7 @@ public class DailyReportJob : IJob
             text: messageBuilder,
             parseMode: ParseMode.Html);
     }
-    private static string SendDailyReport(List<Challenger> activeChallengers)
+    private string SendDailyReport(List<Challenger> activeChallengers)
     {
         StringBuilder messageBuilder = new();
 
@@ -131,6 +140,8 @@ public class DailyReportJob : IJob
                         challenger.Heart,
                         challenger.DailyAttempts.First().SolvedProblems,
                         challenger.TotalSolvedProblems));
+
+            this.logger.LogInformation($"Report: {string.Join(" ", challenger.DailyAttempts.First().SolvedProblems)}");   
         }
 
         return messageBuilder.ToString() + "</pre>";
