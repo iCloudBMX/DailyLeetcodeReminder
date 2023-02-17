@@ -9,5 +9,5 @@ public interface IChallengerService
     Task<Challenger> RetrieveChallengerByLeetcodeUsernameAsync(string leetcodeUsername);
     Task<Challenger> ModifyChallengerAsync(Challenger challenger);
     Task<List<Challenger>> RetrieveChallengers();
-    Task<int> GetCurrentUserLeetCodeProblemSolvetAsync(string leetcodeUsername);
+    Task<int> CurrentSolvedProblemsasync(string leetcodeUsername);
 }
