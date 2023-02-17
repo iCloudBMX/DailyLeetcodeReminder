@@ -86,6 +86,7 @@ public class DailyReportJob : IJob
             // initialize the next day attempts
             activeChallenger.DailyAttempts.Add(new DailyAttempt
             {
+                UserId = activeChallenger.TelegramId,
                 Date = DateTime.Now.Date.AddDays(1),
                 SolvedProblems = 0
             });
