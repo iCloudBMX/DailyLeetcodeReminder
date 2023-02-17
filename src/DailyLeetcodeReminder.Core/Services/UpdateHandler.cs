@@ -3,7 +3,6 @@ using DailyLeetcodeReminder.Domain.Entities;
 using DailyLeetcodeReminder.Domain.Enums;
 using DailyLeetcodeReminder.Domain.Exceptions;
 using Telegram.Bot;
-using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -42,8 +41,8 @@ public class UpdateHandler
     private async Task OnCallbackQueryReceivedAsync(CallbackQuery callbackQuery)
     {
         var challengers = await challengerService.RetrieveChallengers();
-        
-        int pageCount = challengers.Count / pageSize  + 
+
+        int pageCount = challengers.Count / pageSize +
             (challengers.Count % pageSize > 0 ? 1 : 0);
 
         string[] callQueries = callbackQuery.Data.Split(' ');
@@ -77,7 +76,7 @@ public class UpdateHandler
 
             await telegramBotClient.AnswerCallbackQueryAsync(
                 callbackQueryId: callbackQuery.Id,
-                text: "Page not found");
+                text: "Sahifa topilmadi");
         }
     }
 
@@ -97,8 +96,9 @@ public class UpdateHandler
                 "start" => HandleStartCommandAsync(message),
                 "register" => HandleRegisterCommandAsync(message),
                 "rank" => HandleRankCommandAsync(message),
+                "statistic" => CurrentUserStatisticAsync(message),
                 _ => HandleNotAvailableCommandAsync(message)
-            };
+            }; ;
 
             await task;
         }
@@ -138,7 +138,7 @@ public class UpdateHandler
 
             await this.telegramBotClient.SendTextMessageAsync(
                 chatId: message.From.Id,
-                text: "Failed to handle your request. Please try again");
+                text: "Sizning so'rovingizda xatolik yuz berdi. Qayta urinib ko'ring");
 
             return;
         }
@@ -170,7 +170,7 @@ public class UpdateHandler
         {
             await this.telegramBotClient.SendTextMessageAsync(
                 chatId: message.From.Id,
-                text: "Please provide your leetcode platform username after /register command. Like: /register myusername");
+                text: "Iltimos username ni ham kiriting.\n Misol uchun: /register myusername");
 
             return;
         }
@@ -189,13 +189,13 @@ public class UpdateHandler
 
         await this.telegramBotClient.SendTextMessageAsync(
             chatId: insertedChallenger.TelegramId,
-            text: "You have successfully registered");
+            text: "Siz muvaffaqiyatli ro'yxatdan o'tdingiz");
     }
 
     private async Task HandleRankCommandAsync(Message message)
     {
         var challengers = await challengerService.RetrieveChallengers();
-        
+
         var sortedChallengers = challengers
         .OrderByDescending(ch => ch.TotalSolvedProblems)
         .Skip(0).Take(10).ToList();
@@ -205,5 +205,37 @@ public class UpdateHandler
             text: $"<b>{ServiceHelper.TableBuilder(sortedChallengers)}</b>",
             replyMarkup: ServiceHelper.GenerateButtons(challengers.Count / 10),
             parseMode: ParseMode.Html);
+    }
+
+    private async Task CurrentUserStatisticAsync(Message message)
+    {
+        if (message.Chat.Type != ChatType.Private)
+            return;
+
+        var chellenger = await challengerService.RetrieveChallengerByTelegramIdAsync(message.Chat.Id);
+
+        if (chellenger == null)
+        {
+            await telegramBotClient.SendTextMessageAsync(
+            chatId: message.Chat.Id,
+            text: "Kechirasiz, oldin ro'yxatdan o'ting");
+
+            return;
+        }
+
+        int totalProblemSolved = await challengerService.GetCurrentUserLeetCodeProblemSolvetAsync(chellenger.LeetcodeUserName);
+        string staus = chellenger.Status == UserStatus.Active ? "Faol" : "Nofaol";
+        string UserText =
+            "Sizning ishlagan misollaringiz: "
+            + totalProblemSolved + "\n"
+            + "Sizning holatingiz: "
+            + staus
+            + "\n"
+            + "Sizda qolgan imkoniyatlar: "
+            + chellenger.Heart;
+
+        await telegramBotClient.SendTextMessageAsync(
+            chatId: message.Chat.Id,
+            text: UserText);
     }
 }
