@@ -223,7 +223,7 @@ public class UpdateHandler
             return;
         }
 
-        int totalProblemSolved = await challengerService.CurrentSolvedProblemsasync(chellenger.LeetcodeUserName);
+        int totalProblemSolved = await challengerService.CurrentSolvedProblemsAsync(chellenger.LeetcodeUserName);
         string staus = chellenger.Status == UserStatus.Active ? "Faol" : "Nofaol";
         string UserText =
             "Sizning ishlagan misollaringiz: "
