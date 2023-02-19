@@ -109,7 +109,7 @@ public class DailyReportJob : IJob
     {
         StringBuilder messageBuilder = new();
 
-        messageBuilder.AppendLine($"Report of  ({DateTime.Now.ToString("dd.MMMM.yyyy")})\n");
+        messageBuilder.AppendLine($"Hisobot  ({DateTime.Now.ToString("dd.MMMM.yyyy")})\n");
 
         messageBuilder.AppendLine($"<pre>|{new string('-', 22)}" +
                                        $"|{new string('-', 7)}" +
@@ -117,7 +117,7 @@ public class DailyReportJob : IJob
                                        $"|{new string('-', 7)}|");
 
         messageBuilder.AppendLine(String.Format("| {0, -20} | {1, -6}| {2, -6}| {3, -6}|",
-                                                "UserName", "Heart", "Today", "Total"));
+                                                "Foydalanuvchi nomi", "Yurak", "Bugun", "Jami"));
 
         messageBuilder.AppendLine($"|{new string('-', 22)}" +
                                   $"|{new string('-', 7)}" +
