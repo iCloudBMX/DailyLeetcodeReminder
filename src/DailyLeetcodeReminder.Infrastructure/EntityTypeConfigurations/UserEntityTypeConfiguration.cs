@@ -30,5 +30,8 @@ public class UserEntityTypeConfiguration : IEntityTypeConfiguration<Challenger>
         builder.Property(u => u.LastName)
             .HasMaxLength(100)
             .IsRequired(false);
+
+        builder.Property(p => p.Timestamp)
+            .IsRowVersion();
     }
 }
