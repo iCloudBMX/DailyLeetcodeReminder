@@ -29,10 +29,11 @@ namespace DailyLeetcodeReminder.Infrastructure.Jobs
                 long.Parse(Environment.GetEnvironmentVariable("GROUP_ID"));
 
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine($"<b>Daily problem</b> - {dailyProblem.Date}");
-            builder.AppendLine($"<b>Problem</b> - <a href=\"https://leetcode.com{dailyProblem.Link}\">{dailyProblem.Title}</a>");
-            builder.AppendLine($"<b>Difficulty</b> - {dailyProblem.Difficulty}");
-            builder.AppendLine($"<b>Tags</b> - {dailyProblem.Tags}");
+            
+            builder.AppendLine($"<b>Kun masalasi</b> - {dailyProblem.Date}");
+            builder.AppendLine($"<b>Masala</b> - <a href=\"https://leetcode.com{dailyProblem.Link}\">{dailyProblem.Title}</a>");
+            builder.AppendLine($"<b>Qiyinchilik</b> - {dailyProblem.Difficulty}");
+            builder.AppendLine($"<b>Teglar</b> - {dailyProblem.Tags}");
 
             var message = await telegramBotClient.SendTextMessageAsync(
                             chatId: groupId,

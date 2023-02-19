@@ -61,7 +61,8 @@ public class DailyReminderJob : IJob
             {
                 await telegramBotClient.SendTextMessageAsync(
                     chatId: telegramId,
-                    text: "You haven't solved any problem yet. If you want to stay, try to solve any problem");
+                    text: "Siz hali hech qanday masala ishlaganiz yo'q. Agar guruhda qolishni istasangiz, har qanday masalani ishlashga harakat qiling."
+                    + $"\nSizda {DateTime.Now.Date.AddDays(1) - DateTime.Now} vaqt qoldi");
             }
         }
         catch (Exception ex)
