@@ -138,6 +138,10 @@ public class DailyReportJob : IJob
 
         foreach (var challenger in activeChallengers)
         {
+            this.logger.LogInformation($"Previous day: {DateTime.Now.AddDays(-1).Date}");
+            this.logger.LogInformation($"Attempts for {challenger.LeetcodeUserName} are {string.Join(", ", challenger.DailyAttempts.Select(da => da.Date))}");
+
+
             var previousDayAttempt = challenger
                 .DailyAttempts
                 .FirstOrDefault(da => da.Date == DateTime.Now.AddDays(-1).Date);
