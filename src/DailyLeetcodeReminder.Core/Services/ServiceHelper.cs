@@ -26,11 +26,11 @@ public static class ServiceHelper
     public static string TableBuilder(List<Challenger> challengers)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("Rating");
+        builder.AppendLine("Reyting");
         builder.AppendLine($"<pre>|{new string('-', 22)}|{new string('-', 10)}|");
 
         builder.AppendLine(String.Format("| {0, -20} | {1, -9}|",
-            "UserName", "Total"));
+            "Foydalanuvchi nomi", "Jami"));
 
         builder.AppendLine($"|{new string('-', 22)}|{new string('-', 10)}|");
 

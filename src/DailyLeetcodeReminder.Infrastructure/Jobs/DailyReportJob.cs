@@ -2,12 +2,10 @@
 using DailyLeetcodeReminder.Domain.Enums;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
 using DailyLeetcodeReminder.Infrastructure.Services;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Quartz;
 using System.Text;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace DailyLeetcodeReminder.Infrastructure.Jobs;
@@ -34,23 +32,22 @@ public class DailyReportJob : IJob
     public async Task Execute(IJobExecutionContext context)
     {
         long groupId = long.Parse(Environment.GetEnvironmentVariable("GROUP_ID"));
+        var today = DateTime.Now.Date;
+        var yesterday = today.AddDays(-1);
 
-        // select list of active challengers
         List<Challenger> activeChallengers = await challengerRepository
             .SelectActiveChallengersAsync();
 
-        // get total solved problems from leetcode
         foreach (var activeChallenger in activeChallengers)
         {
             var totalSolvedProblemsCount = await leetcodeBroker
                 .GetTotalSolvedProblemsCountAsync(activeChallenger.LeetcodeUserName);
 
-            // update solved problems count
-            int difference = totalSolvedProblemsCount - activeChallenger.TotalSolvedProblems;
+            int yesterdayProblemsSolved = totalSolvedProblemsCount - activeChallenger.TotalSolvedProblems;
 
             // if user hasn't solved any problem, decrease attempts count
-            if (difference == 0 && 
-                activeChallenger.CreatedAt.Date < DateTime.Now.Date.AddDays(-1))
+            if (yesterdayProblemsSolved == 0 && 
+                activeChallenger.CreatedAt.Date < yesterday)
             {
                 activeChallenger.Heart--;
             }
@@ -76,16 +73,20 @@ public class DailyReportJob : IJob
                 activeChallenger.TotalSolvedProblems = totalSolvedProblemsCount;
             }
 
-            if (activeChallenger.DailyAttempts.Count() > 0)
+            var yesterdayAttempt = activeChallenger
+                .DailyAttempts
+                .FirstOrDefault(da => da.Date == yesterday);
+
+            if(yesterdayAttempt is not null)
             {
-                activeChallenger.DailyAttempts.First().SolvedProblems = difference;
+                yesterdayAttempt.SolvedProblems = yesterdayProblemsSolved;
             }
 
             // initialize the next day attempts
             activeChallenger.DailyAttempts.Add(new DailyAttempt
             {
                 UserId = activeChallenger.TelegramId,
-                Date = DateTime.Now.Date,
+                Date = today,
                 SolvedProblems = 0
             });
         }
@@ -104,18 +105,19 @@ public class DailyReportJob : IJob
         List<Challenger> activeChallengers,
         long groupId)
     {
-        string messageBuilder = SendDailyReport(activeChallengers: activeChallengers);
+        string dailyReportDetails = GetDailyReportDetails(activeChallengers: activeChallengers);
 
         await telegramBotClient.SendTextMessageAsync(
             chatId: groupId, 
-            text: messageBuilder,
+            text: dailyReportDetails,
             parseMode: ParseMode.Html);
     }
-    private string SendDailyReport(List<Challenger> activeChallengers)
+
+    private string GetDailyReportDetails(List<Challenger> activeChallengers)
     {
         StringBuilder messageBuilder = new();
 
-        messageBuilder.AppendLine($"Report of  ({DateTime.Now.ToString("dd.MMMM.yyyy")})\n");
+        messageBuilder.AppendLine($"Hisobot - <b>{DateTime.Now.ToString("dd.MM.yyyy")}</b>\n");
 
         messageBuilder.AppendLine($"<pre>|{new string('-', 22)}" +
                                        $"|{new string('-', 7)}" +
@@ -123,19 +125,31 @@ public class DailyReportJob : IJob
                                        $"|{new string('-', 7)}|");
 
         messageBuilder.AppendLine(String.Format("| {0, -20} | {1, -6}| {2, -6}| {3, -6}|",
-                                                "UserName", "Heart", "Today", "Total"));
+                                                "Foydalanuvchi nomi", "Yurak", "Bugun", "Jami"));
 
         messageBuilder.AppendLine($"|{new string('-', 22)}" +
                                   $"|{new string('-', 7)}" +
                                   $"|{new string('-', 7)}" +
                                   $"|{new string('-', 7)}|");
 
+        var yesterDay = DateTime.Now.AddDays(-1).Date;
+
         foreach (var challenger in activeChallengers)
         {
+            var yesterDayAttempt = challenger
+                .DailyAttempts
+                .FirstOrDefault(da => da.Date == yesterDay);
+
+            if(yesterDayAttempt is null)
+            {
+                this.logger.LogWarning($"Failed to get daily attempts for username: {challenger.LeetcodeUserName}");
+                continue;
+            }
+
             messageBuilder.AppendLine(String.Format("| {0, -20} | {1, -6}| {2, -6}| {3, -6}|",
                         challenger.LeetcodeUserName,
                         challenger.Heart,
-                        challenger.DailyAttempts.First().SolvedProblems,
+                        yesterDayAttempt.SolvedProblems,
                         challenger.TotalSolvedProblems)); 
         }
 

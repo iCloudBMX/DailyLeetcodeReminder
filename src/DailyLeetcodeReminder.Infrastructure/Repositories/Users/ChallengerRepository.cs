@@ -42,26 +42,21 @@ public class ChallengerRepository : IChallengerRepository
         }
         catch (DbUpdateException ex)
         {
-            if (ex.InnerException is PostgresException pgException)
-            {
-                if (pgException.SqlState == "23505" &&
-                    pgException.Message.Contains("PK_Challengers"))
-                {
-                    throw new AlreadyExistsException(challenger.LeetcodeUserName);
-                }
-                else if (pgException.SqlState == "23505" &&
-                         pgException.Message.Contains("IX_Challengers_LeetcodeUserName"))
-                {
-                    throw new DuplicateException(challenger.LeetcodeUserName);
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            else
+            if (ex.InnerException is not PostgresException pgException)
             {
                 throw;
+            }
+
+            if (pgException.SqlState == "23505" &&
+                    pgException.Message.Contains("PK_Challengers"))
+            {
+                throw new AlreadyExistsException(challenger.LeetcodeUserName);
+            }
+
+            if (pgException.SqlState == "23505" &&
+                     pgException.Message.Contains("IX_Challengers_LeetcodeUserName"))
+            {
+                throw new DuplicateException(challenger.LeetcodeUserName);
             }
         }
 
@@ -79,27 +74,30 @@ public class ChallengerRepository : IChallengerRepository
 
     public async Task<List<ChallengerWithNoAttempt>> SelectUsersWithNoAttemptsAsync()
     {
+        var today = DateTime.Now.Date;
         return await this.applicationDbContext
-        .Set<Challenger>()
-        .Include(ch => ch.DailyAttempts
-            .Where(da => da.Date == DateTime.Now.Date.AddDays(-1))
-            .Where(da => da.SolvedProblems == 0))
-        .Where(ch => ch.Status == UserStatus.Active)
-        .Select(ch => new ChallengerWithNoAttempt
-        {
-            LeetcodeUserName = ch.LeetcodeUserName,
-            TelegramId = ch.TelegramId,
-            TotalSolvedProblems = ch.TotalSolvedProblems
-        })
-        .ToListAsync();
+            .Set<Challenger>()
+            .Include(ch => ch.DailyAttempts
+                .Where(da => da.Date == today)
+                .Where(da => da.SolvedProblems == 0))
+            .Where(ch => ch.Status == UserStatus.Active)
+            .Select(ch => new ChallengerWithNoAttempt
+            {
+                LeetcodeUserName = ch.LeetcodeUserName,
+                TelegramId = ch.TelegramId,
+                TotalSolvedProblems = ch.TotalSolvedProblems
+            })
+            .ToListAsync();
     }
 
     public async Task<List<Challenger>> SelectActiveChallengersAsync()
     {
+        var yesterDay = DateTime.Now.Date.AddDays(-1);
+
         return await this.applicationDbContext
             .Set<Challenger>()
             .Include(ch => ch.DailyAttempts
-                .Where(da => da.Date == DateTime.Now.Date.AddDays(-1)))
+                .Where(da => da.Date == yesterDay))
             .Where(ch => ch.Status == UserStatus.Active)
             .ToListAsync();
     }
@@ -107,6 +105,20 @@ public class ChallengerRepository : IChallengerRepository
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         return await this.applicationDbContext
-                .SaveChangesAsync(cancellationToken);
+            .SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<Challenger> SelectUserWithWeeklyAttempts(long userId)
+    {
+        var lastWeek = DateTime.Now.Date.AddDays(-8);
+        var today = DateTime.Now.Date;
+
+        return await this.applicationDbContext
+            .Set<Challenger>()
+            .Include(user => user.DailyAttempts
+                .Where(dailyAttempt => dailyAttempt.Date >= lastWeek &&
+                    dailyAttempt.Date != today))
+            .Where(user => user.TelegramId == userId)
+            .FirstAsync();
     }
 }
