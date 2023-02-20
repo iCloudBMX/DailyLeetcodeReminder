@@ -2,12 +2,10 @@
 using DailyLeetcodeReminder.Domain.Enums;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
 using DailyLeetcodeReminder.Infrastructure.Services;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Quartz;
 using System.Text;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace DailyLeetcodeReminder.Infrastructure.Jobs;
@@ -42,15 +40,18 @@ public class DailyReportJob : IJob
         // get total solved problems from leetcode
         foreach (var activeChallenger in activeChallengers)
         {
+            this.logger.LogInformation($"Retrieved {activeChallenger.DailyAttempts.Count()} attempts for user {activeChallenger.LeetcodeUserName}");
+
             var totalSolvedProblemsCount = await leetcodeBroker
                 .GetTotalSolvedProblemsCountAsync(activeChallenger.LeetcodeUserName);
 
             // update solved problems count
             int difference = totalSolvedProblemsCount - activeChallenger.TotalSolvedProblems;
+            var previousDay = DateTime.Now.Date.AddDays(-1);
 
             // if user hasn't solved any problem, decrease attempts count
             if (difference == 0 && 
-                activeChallenger.CreatedAt.Date < DateTime.Now.Date.AddDays(-1))
+                activeChallenger.CreatedAt.Date < previousDay)
             {
                 activeChallenger.Heart--;
             }
@@ -76,9 +77,13 @@ public class DailyReportJob : IJob
                 activeChallenger.TotalSolvedProblems = totalSolvedProblemsCount;
             }
 
-            if (activeChallenger.DailyAttempts.Count() > 0)
+            var previousDayAttempt = activeChallenger
+                .DailyAttempts
+                .FirstOrDefault(da => da.Date == previousDay);
+
+            if(previousDayAttempt is not null)
             {
-                activeChallenger.DailyAttempts.First().SolvedProblems = difference;
+                previousDayAttempt.SolvedProblems = difference;
             }
 
             // initialize the next day attempts
@@ -104,14 +109,15 @@ public class DailyReportJob : IJob
         List<Challenger> activeChallengers,
         long groupId)
     {
-        string messageBuilder = SendDailyReport(activeChallengers: activeChallengers);
+        string dailyReportDetails = GetDailyReportDetails(activeChallengers: activeChallengers);
 
         await telegramBotClient.SendTextMessageAsync(
             chatId: groupId, 
-            text: messageBuilder,
+            text: dailyReportDetails,
             parseMode: ParseMode.Html);
     }
-    private string SendDailyReport(List<Challenger> activeChallengers)
+
+    private string GetDailyReportDetails(List<Challenger> activeChallengers)
     {
         StringBuilder messageBuilder = new();
 
@@ -132,14 +138,20 @@ public class DailyReportJob : IJob
 
         foreach (var challenger in activeChallengers)
         {
-            int? solvedProblems = challenger.DailyAttempts.Where(da => da.Date != DateTime.Now.Date)
-                            .FirstOrDefault().SolvedProblems;
-            if (solvedProblems == null)
+            var previousDayAttempt = challenger
+                .DailyAttempts
+                .FirstOrDefault(da => da.Date == DateTime.Now.AddDays(-1).Date);
+
+            if(previousDayAttempt is null)
+            {
+                this.logger.LogWarning($"Failed to get daily attempts for username: {challenger.LeetcodeUserName}");
                 continue;
+            }
+
             messageBuilder.AppendLine(String.Format("| {0, -20} | {1, -6}| {2, -6}| {3, -6}|",
                         challenger.LeetcodeUserName,
                         challenger.Heart,
-                        solvedProblems,
+                        previousDayAttempt.SolvedProblems,
                         challenger.TotalSolvedProblems)); 
         }
 
