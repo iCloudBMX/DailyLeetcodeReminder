@@ -82,9 +82,9 @@ public class ChallengerService : IChallengerService
     {
         return await leetcodeBroker.GetTotalSolvedProblemsCountAsync(leetcodeUsername);
     }
-    public async Task<Challenger> UserWithAttemptsWeekyAsync(long userId)
+    public async Task<Challenger> WeeklyUserAttempts(long userId)
     {
         return await this.challengerRepository
-                .SelectUserWithAttemptsWeekyAsync(userId);
+                .SelectUserWithWeeklyAttempts(userId);
     }
 }

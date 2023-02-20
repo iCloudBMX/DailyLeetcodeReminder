@@ -82,9 +82,9 @@ public class UpdateHandler
 
     public async Task HandleCommandAsync(Message message)
     {
-        if (message == null)
+        if (message is null)
             return;
-        if (message.Text == null)
+        if (message.Text is null)
             return;
         if (!message.Text.StartsWith("/"))
         {
@@ -154,19 +154,19 @@ public class UpdateHandler
         if (message.Chat.Type != ChatType.Private)
             return;
 
-        var chellengrs = await this.challengerService.
-                UserWithAttemptsWeekyAsync(message.Chat.Id);
+        var challengers = await this.challengerService.
+                WeeklyUserAttempts(message.Chat.Id);
 
-        string staus = chellengrs.Status == UserStatus.Active ? "Faol" : "Nofaol";
-        string week = string.Join("\n\n", chellengrs.DailyAttempts
+        string status = challengers.Status == UserStatus.Active ? "Faol" : "Nofaol";
+        string week = string.Join("\n\n", challengers.DailyAttempts
                     .Select(da =>
                        "Sana: " + da.Date + "\n" +
                        "Ishlangan misollar: " + da.SolvedProblems));
 
-        string sendText = chellengrs.FirstName + "\n"
-            + "Sizda qolgan imkoniyatlar: " + chellengrs.Heart + "\n"
-            + "Sizning ishlagan misollaringiz: " + chellengrs.TotalSolvedProblems
-            + "Sizning holatingiz: " + staus + "\n\n"
+        string sendText = challengers.FirstName + "\n"
+            + "Sizda qolgan imkoniyatlar: " + challengers.Heart + "\n"
+            + "Sizning ishlagan misollaringiz: " + challengers.TotalSolvedProblems
+            + "Sizning holatingiz: " + status + "\n\n"
             + week;
 
 
@@ -255,12 +255,12 @@ public class UpdateHandler
         }
 
         int totalProblemSolved = await challengerService.CurrentSolvedProblemsAsync(chellenger.LeetcodeUserName);
-        string staus = chellenger.Status == UserStatus.Active ? "Faol" : "Nofaol";
+        string status = chellenger.Status == UserStatus.Active ? "Faol" : "Nofaol";
         string UserText =
             "Sizning ishlagan misollaringiz: "
             + totalProblemSolved + "\n"
             + "Sizning holatingiz: "
-            + staus
+            + status
             + "\n"
             + "Sizda qolgan imkoniyatlar: "
             + chellenger.Heart;

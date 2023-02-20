@@ -42,20 +42,22 @@ public class ChallengerRepository : IChallengerRepository
         }
         catch (DbUpdateException ex)
         {
-            if (ex.InnerException is PostgresException pgException)
+            if (ex.InnerException is not PostgresException pgException)
             {
-                if (pgException.SqlState == "23505" &&
-                    pgException.Message.Contains("PK_Challengers"))
-                {
-                    throw new AlreadyExistsException(challenger.LeetcodeUserName);
-                }
-                else if (pgException.SqlState == "23505" &&
-                         pgException.Message.Contains("IX_Challengers_LeetcodeUserName"))
-                {
-                    throw new DuplicateException(challenger.LeetcodeUserName);
-                }
+                throw;
             }
-            throw;
+
+            if (pgException.SqlState == "23505" &&
+                    pgException.Message.Contains("PK_Challengers"))
+            {
+                throw new AlreadyExistsException(challenger.LeetcodeUserName);
+            }
+
+            if (pgException.SqlState == "23505" &&
+                     pgException.Message.Contains("IX_Challengers_LeetcodeUserName"))
+            {
+                throw new DuplicateException(challenger.LeetcodeUserName);
+            }
         }
 
         return userEntityEntry.Entity;
@@ -100,16 +102,16 @@ public class ChallengerRepository : IChallengerRepository
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         return await this.applicationDbContext
-                .SaveChangesAsync(cancellationToken);
+            .SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<Challenger> SelectUserWithAttemptsWeekyAsync(long userId)
+    public async Task<Challenger> SelectUserWithWeeklyAttempts(long userId)
     {
         return await this.applicationDbContext
             .Set<Challenger>()
             .Include(user => user.DailyAttempts
-                    .Where(dailyAttempt => dailyAttempt.Date >= DateTime.Now.Date.AddDays(-8) &&
-                                           dailyAttempt.Date != DateTime.Now.Date))
+                .Where(dailyAttempt => dailyAttempt.Date >= DateTime.Now.Date.AddDays(-8) &&
+                                       dailyAttempt.Date != DateTime.Now.Date))
             .Where(user => user.TelegramId == userId)
             .FirstAsync();
     }

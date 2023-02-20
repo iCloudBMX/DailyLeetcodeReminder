@@ -11,5 +11,5 @@ public interface IChallengerRepository
     Task<List<ChallengerWithNoAttempt>> SelectUsersWithNoAttemptsAsync();
     Task<List<Challenger>> SelectActiveChallengersAsync();
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-    Task<Challenger> SelectUserWithAttemptsWeekyAsync(long userId);
+    Task<Challenger> SelectUserWithWeeklyAttempts(long userId);
 }
