@@ -10,6 +10,6 @@ public interface IChallengerRepository
     Task UpdateChallengerAsync(Challenger challenger);
     Task<List<ChallengerWithNoAttempt>> SelectUsersWithNoAttemptsAsync();
     Task<List<Challenger>> SelectActiveChallengersAsync();
-
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    Task<Challenger> SelectUserWithAttemptsWeekyAsync(long userId);
 }

@@ -30,7 +30,6 @@ public class ChallengerService : IChallengerService
 
         return insertedChallenger;
     }
-
     public async Task<Challenger> RetrieveChallengerByTelegramIdAsync(long telegramId)
     {
         Challenger storageChallenger = await this.challengerRepository
@@ -43,7 +42,6 @@ public class ChallengerService : IChallengerService
 
         return storageChallenger;
     }
-
     public async Task<Challenger> RetrieveChallengerByLeetcodeUsernameAsync(string leetcodeUsername)
     {
         Challenger storageChallenger = await this.challengerRepository
@@ -56,7 +54,6 @@ public class ChallengerService : IChallengerService
 
         return storageChallenger;
     }
-
     public async Task<Challenger> ModifyChallengerAsync(Challenger challenger)
     {
         Challenger storageChallenger = await this.challengerRepository
@@ -77,7 +74,6 @@ public class ChallengerService : IChallengerService
 
         return storageChallenger;
     }
-
     public async Task<List<Challenger>> RetrieveChallengers()
     {
         return await challengerRepository.SelectActiveChallengersAsync();
@@ -85,5 +81,10 @@ public class ChallengerService : IChallengerService
     public async Task<int> CurrentSolvedProblemsAsync(string leetcodeUsername)
     {
         return await leetcodeBroker.GetTotalSolvedProblemsCountAsync(leetcodeUsername);
+    }
+    public async Task<Challenger> UserWithAttemptsWeekyAsync(long userId)
+    {
+        return await this.challengerRepository
+                .SelectUserWithAttemptsWeekyAsync(userId);
     }
 }

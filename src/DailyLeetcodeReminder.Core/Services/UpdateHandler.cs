@@ -82,6 +82,10 @@ public class UpdateHandler
 
     public async Task HandleCommandAsync(Message message)
     {
+        if (message == null)
+            return;
+        if (message.Text == null)
+            return;
         if (!message.Text.StartsWith("/"))
         {
             return;
@@ -96,7 +100,8 @@ public class UpdateHandler
                 "start" => HandleStartCommandAsync(message),
                 "register" => HandleRegisterCommandAsync(message),
                 "rank" => HandleRankCommandAsync(message),
-                "statistics" => CurrentUserStatisticAsync(message),
+                "statistics" => HandleStatisticsCommandAsync(message),
+                "weekly_report" => HandleWeeklyReportCommandAsync(message),
                 _ => HandleNotAvailableCommandAsync(message)
             }; ;
 
@@ -142,6 +147,32 @@ public class UpdateHandler
 
             return;
         }
+    }
+
+    private async Task HandleWeeklyReportCommandAsync(Message message)
+    {
+        if (message.Chat.Type != ChatType.Private)
+            return;
+
+        var chellengrs = await this.challengerService.
+                UserWithAttemptsWeekyAsync(message.Chat.Id);
+
+        string staus = chellengrs.Status == UserStatus.Active ? "Faol" : "Nofaol";
+        string week = string.Join("\n\n", chellengrs.DailyAttempts
+                    .Select(da =>
+                       "Sana: " + da.Date + "\n" +
+                       "Ishlangan misollar: " + da.SolvedProblems));
+
+        string sendText = chellengrs.FirstName + "\n"
+            + "Sizda qolgan imkoniyatlar: " + chellengrs.Heart + "\n"
+            + "Sizning ishlagan misollaringiz: " + chellengrs.TotalSolvedProblems
+            + "Sizning holatingiz: " + staus + "\n\n"
+            + week;
+
+
+        await telegramBotClient.SendTextMessageAsync(
+            chatId: message.Chat.Id,
+            text: sendText);
     }
 
     private async Task HandleStartCommandAsync(Message message)
@@ -207,7 +238,7 @@ public class UpdateHandler
             parseMode: ParseMode.Html);
     }
 
-    private async Task CurrentUserStatisticAsync(Message message)
+    private async Task HandleStatisticsCommandAsync(Message message)
     {
         if (message.Chat.Type != ChatType.Private)
             return;
