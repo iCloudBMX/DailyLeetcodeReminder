@@ -29,7 +29,7 @@ public class DailyReminderJob : IJob
     public async Task Execute(IJobExecutionContext context)
     {
         List<ChallengerWithNoAttempt> challengers =
-                await challengerRepository.SelectUsersWithNoAttemptsAsync();
+                await challengerRepository.SelectUsersHasNoAttemptsAsync();
 
         List<long> challengersHasNoAttempts = new();
         List<long> challengersHasAttempts = new();

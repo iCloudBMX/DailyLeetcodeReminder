@@ -73,7 +73,7 @@ public class ChallengerRepository : IChallengerRepository
         await this.SaveChangesAsync();
     }
 
-    public async Task<List<ChallengerWithNoAttempt>> SelectUsersWithNoAttemptsAsync()
+    public async Task<List<ChallengerWithNoAttempt>> SelectUsersHasNoAttemptsAsync()
     {
         var today = DateTime.Now.Date;
         
@@ -92,7 +92,7 @@ public class ChallengerRepository : IChallengerRepository
             .ToListAsync();
     }
 
-    public async Task<List<Challenger>> SelectActiveChallengersAsync()
+    public async Task<List<Challenger>> SelectActiveChallengersWithAttemptsAsync()
     {
         var yesterDay = DateTime.Now.Date.AddDays(-1);
 
@@ -123,5 +123,13 @@ public class ChallengerRepository : IChallengerRepository
                     dailyAttempt.Date != today))
             .Where(user => user.TelegramId == userId)
             .FirstAsync();
+    }
+
+    public async Task<List<Challenger>> SelectActiveChallengers()
+    {
+        return await this.applicationDbContext
+            .Set<Challenger>()
+            .Where(ch => ch.Status == UserStatus.Active)
+            .ToListAsync();
     }
 }

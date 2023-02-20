@@ -77,7 +77,7 @@ public class ChallengerService : IChallengerService
 
     public async Task<List<Challenger>> RetrieveChallengers()
     {
-        return await challengerRepository.SelectActiveChallengersAsync();
+        return await challengerRepository.SelectActiveChallengers();
     }
 
     public async Task<int> CurrentSolvedProblemsAsync(string leetcodeUsername)

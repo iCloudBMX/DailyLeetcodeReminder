@@ -36,7 +36,7 @@ public class DailyReportJob : IJob
         var yesterday = today.AddDays(-1);
 
         List<Challenger> activeChallengers = await challengerRepository
-            .SelectActiveChallengersAsync();
+            .SelectActiveChallengersWithAttemptsAsync();
 
         foreach (var activeChallenger in activeChallengers)
         {
