@@ -1,5 +1,7 @@
-﻿using DailyLeetcodeReminder.Infrastructure.Contexts;
+﻿using DailyLeetcodeReminder.Domain.Entities;
+using DailyLeetcodeReminder.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
+using Telegram.Bot.Types;
 
 namespace DailyLeetcodeReminder.Infrastructure.Repositories;
 
@@ -23,11 +25,11 @@ public class AttemptRepository : IAttemptRepository
 
     public async Task MarkDailyAttemptsAsync(List<long> challengerIds)
     {
-        string sql = @$"update ""DailyAttempts"" " +
-            @$"set ""SolvedProblems"" = ""SolvedProblems"" + 1 " +
-            @$"where ""UserId"" in ({string.Join(',', challengerIds)}) " +
-            @$"and ""Date"" = '{DateOnly.FromDateTime(DateTime.Now)}'";
-
-        await this.applicationDbContext.Database.ExecuteSqlRawAsync(sql);
+        await this.applicationDbContext.Set<DailyAttempt>()
+            .Where(da => challengerIds.Any(id => id == da.UserId))
+            .Where(da => da.Date.Date == DateTime.Now.Date)
+            .ExecuteUpdateAsync(o => o.SetProperty(
+                da => da.SolvedProblems,
+                da => da.SolvedProblems + 1));
     }
 }
