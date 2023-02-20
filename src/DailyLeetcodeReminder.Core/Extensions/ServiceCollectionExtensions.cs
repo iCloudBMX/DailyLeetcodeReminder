@@ -137,7 +137,7 @@ public static class ServiceCollectionExtensions
             q.AddTrigger(opts => opts
                 .ForJob(dailyReportJobKey)
                 .WithIdentity($"{dailyReportJobKey.Name}-trigger")
-                .WithCronSchedule("0 54 0 * * ?")
+                .WithCronSchedule("0 07 1 * * ?")
             );
 
             var dailyProblemJobKey = new JobKey(nameof(DailyProblemJob));

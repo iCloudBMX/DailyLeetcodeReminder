@@ -57,7 +57,7 @@ public class DailyReminderJob : IJob
                     .MarkDailyAttemptsAsync(challengersHasAttempts);
             }
 
-            var timeSpan= DateTime.Now.Date.AddDays(1) - DateTime.Now;
+            var timeSpan = DateTime.Now.Date.AddDays(1) - DateTime.Now;
 
 
             foreach (long telegramId in challengersWithNoAttempts)
