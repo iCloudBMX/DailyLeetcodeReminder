@@ -1,4 +1,4 @@
-﻿using DailyLeetcodeReminder.Infrastructure.Brokers;
+﻿using DailyLeetcodeReminder.Infrastructure.Models;
 using DailyLeetcodeReminder.Infrastructure.Services;
 using Quartz;
 using System.Text;
@@ -36,9 +36,9 @@ namespace DailyLeetcodeReminder.Infrastructure.Jobs
             builder.AppendLine($"<b>Teglar</b> - {dailyProblem.Tags}");
 
             var message = await telegramBotClient.SendTextMessageAsync(
-                            chatId: groupId,
-                            text: builder.ToString(),
-                            parseMode: ParseMode.Html);
+                chatId: groupId,
+                text: builder.ToString(),
+                parseMode: ParseMode.Html);
 
             await telegramBotClient.PinChatMessageAsync(groupId, message.MessageId);
         }

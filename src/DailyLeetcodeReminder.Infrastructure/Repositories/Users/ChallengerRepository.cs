@@ -35,6 +35,7 @@ public class ChallengerRepository : IChallengerRepository
         var userEntityEntry = await this.applicationDbContext
             .Set<Challenger>()
             .AddAsync(challenger);
+
         try
         {
             await this.applicationDbContext
@@ -75,6 +76,7 @@ public class ChallengerRepository : IChallengerRepository
     public async Task<List<ChallengerWithNoAttempt>> SelectUsersWithNoAttemptsAsync()
     {
         var today = DateTime.Now.Date;
+        
         return await this.applicationDbContext
             .Set<Challenger>()
             .Include(ch => ch.DailyAttempts
@@ -102,7 +104,8 @@ public class ChallengerRepository : IChallengerRepository
             .ToListAsync();
     }
 
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public async Task<int> SaveChangesAsync(
+        CancellationToken cancellationToken = default)
     {
         return await this.applicationDbContext
             .SaveChangesAsync(cancellationToken);

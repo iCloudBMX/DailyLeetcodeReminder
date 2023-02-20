@@ -16,9 +16,11 @@ public class AttemptRepository : IAttemptRepository
 
     public async Task MarkDailyAttemptsAsync(List<long> challengerIds)
     {
+        var today = DateTime.Now.Date;
+
         await this.applicationDbContext.Set<DailyAttempt>()
             .Where(da => challengerIds.Any(id => id == da.UserId))
-            .Where(da => da.Date.Date == DateTime.Now.Date)
+            .Where(da => da.Date == today)
             .ExecuteUpdateAsync(o => o.SetProperty(
                 da => da.SolvedProblems,
                 da => da.SolvedProblems + 1));

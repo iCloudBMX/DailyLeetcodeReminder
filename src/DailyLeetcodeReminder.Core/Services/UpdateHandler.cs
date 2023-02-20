@@ -82,11 +82,12 @@ public class UpdateHandler
 
     public async Task HandleCommandAsync(Message message)
     {
-        if (message is null)
+        if(message is null || message.Text is null)
+        {
             return;
-        if (message.Text is null)
-            return;
-        if (!message.Text.StartsWith("/"))
+        }
+
+        if (message.Text.StartsWith("/") is false)
         {
             return;
         }
@@ -154,8 +155,8 @@ public class UpdateHandler
         if (message.Chat.Type != ChatType.Private)
             return;
 
-        var challengers = await this.challengerService.
-                WeeklyUserAttempts(message.Chat.Id);
+        var challengers = await this.challengerService
+            .WeeklyUserAttempts(message.Chat.Id);
 
         string status = challengers.Status == UserStatus.Active ? "Faol" : "Nofaol";
         string week = string.Join("\n\n", challengers.DailyAttempts
@@ -254,9 +255,12 @@ public class UpdateHandler
             return;
         }
 
-        int totalProblemSolved = await challengerService.CurrentSolvedProblemsAsync(chellenger.LeetcodeUserName);
+        int totalProblemSolved = await challengerService
+            .CurrentSolvedProblemsAsync(chellenger.LeetcodeUserName);
+        
         string status = chellenger.Status == UserStatus.Active ? "Faol" : "Nofaol";
-        string UserText =
+        
+        string sendText =
             "Sizning ishlagan misollaringiz: "
             + totalProblemSolved + "\n"
             + "Sizning holatingiz: "
@@ -267,6 +271,6 @@ public class UpdateHandler
 
         await telegramBotClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
-            text: UserText);
+            text: sendText);
     }
 }
