@@ -229,8 +229,10 @@ public class UpdateHandler
         var challengers = await challengerService.RetrieveChallengers();
 
         var sortedChallengers = challengers
-        .OrderByDescending(ch => ch.TotalSolvedProblems)
-        .Skip(0).Take(10).ToList();
+            .OrderByDescending(ch => ch.TotalSolvedProblems)
+            .Skip(0)
+            .Take(10)
+            .ToList();
 
         await telegramBotClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
@@ -244,13 +246,14 @@ public class UpdateHandler
         if (message.Chat.Type != ChatType.Private)
             return;
 
-        var chellenger = await challengerService.RetrieveChallengerByTelegramIdAsync(message.Chat.Id);
+        var chellenger = await challengerService
+            .RetrieveChallengerByTelegramIdAsync(message.Chat.Id);
 
         if (chellenger == null)
         {
             await telegramBotClient.SendTextMessageAsync(
-            chatId: message.Chat.Id,
-            text: "Kechirasiz, oldin ro'yxatdan o'ting");
+                chatId: message.Chat.Id,
+                text: "Kechirasiz, oldin ro'yxatdan o'ting");
 
             return;
         }
