@@ -57,12 +57,18 @@ public class DailyReminderJob : IJob
                     .MarkDailyAttemptsAsync(challengersHasAttempts);
             }
 
+            var timeSpan= DateTime.Now.Date.AddDays(1) - DateTime.Now;
+
+
             foreach (long telegramId in challengersWithNoAttempts)
             {
+                timeSpan = DateTime.Now.Date.AddDays(1) - DateTime.Now;
+                var timeSpanStr = $"{timeSpan.ToString("hh")}:{timeSpan.ToString("mm")}:{timeSpan.ToString("ss")}";
+
                 await telegramBotClient.SendTextMessageAsync(
                     chatId: telegramId,
                     text: "Siz hali hech qanday masala ishlaganiz yo'q. Agar guruhda qolishni istasangiz, har qanday masalani ishlashga harakat qiling."
-                    + $"\nSizda {DateTime.Now.Date.AddDays(1) - DateTime.Now} vaqt qoldi");
+                    + $"\nSizda {timeSpanStr} vaqt qoldi");
             }
         }
         catch (Exception ex)
