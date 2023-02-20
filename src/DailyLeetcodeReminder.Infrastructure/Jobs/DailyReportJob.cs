@@ -32,26 +32,22 @@ public class DailyReportJob : IJob
     public async Task Execute(IJobExecutionContext context)
     {
         long groupId = long.Parse(Environment.GetEnvironmentVariable("GROUP_ID"));
+        var today = DateTime.Now.Date;
+        var yesterday = today.AddDays(-1);
 
-        // select list of active challengers
         List<Challenger> activeChallengers = await challengerRepository
             .SelectActiveChallengersAsync();
 
-        // get total solved problems from leetcode
         foreach (var activeChallenger in activeChallengers)
         {
-            this.logger.LogInformation($"Retrieved {activeChallenger.DailyAttempts.Count()} attempts for user {activeChallenger.LeetcodeUserName}");
-
             var totalSolvedProblemsCount = await leetcodeBroker
                 .GetTotalSolvedProblemsCountAsync(activeChallenger.LeetcodeUserName);
 
-            // update solved problems count
-            int difference = totalSolvedProblemsCount - activeChallenger.TotalSolvedProblems;
-            var previousDay = DateTime.Now.Date.AddDays(-1);
+            int yesterdayProblemsSolved = totalSolvedProblemsCount - activeChallenger.TotalSolvedProblems;
 
             // if user hasn't solved any problem, decrease attempts count
-            if (difference == 0 && 
-                activeChallenger.CreatedAt.Date < previousDay)
+            if (yesterdayProblemsSolved == 0 && 
+                activeChallenger.CreatedAt.Date < yesterday)
             {
                 activeChallenger.Heart--;
             }
@@ -77,20 +73,20 @@ public class DailyReportJob : IJob
                 activeChallenger.TotalSolvedProblems = totalSolvedProblemsCount;
             }
 
-            var previousDayAttempt = activeChallenger
+            var yesterdayAttempt = activeChallenger
                 .DailyAttempts
-                .FirstOrDefault(da => da.Date == previousDay);
+                .FirstOrDefault(da => da.Date == yesterday);
 
-            if(previousDayAttempt is not null)
+            if(yesterdayAttempt is not null)
             {
-                previousDayAttempt.SolvedProblems = difference;
+                yesterdayAttempt.SolvedProblems = yesterdayProblemsSolved;
             }
 
             // initialize the next day attempts
             activeChallenger.DailyAttempts.Add(new DailyAttempt
             {
                 UserId = activeChallenger.TelegramId,
-                Date = DateTime.Now.Date,
+                Date = today,
                 SolvedProblems = 0
             });
         }
@@ -121,7 +117,7 @@ public class DailyReportJob : IJob
     {
         StringBuilder messageBuilder = new();
 
-        messageBuilder.AppendLine($"Hisobot  ({DateTime.Now.ToString("dd.MMMM.yyyy")})\n");
+        messageBuilder.AppendLine($"Hisobot - <b>{DateTime.Now.ToString("dd.MM.yyyy")}</b>\n");
 
         messageBuilder.AppendLine($"<pre>|{new string('-', 22)}" +
                                        $"|{new string('-', 7)}" +
@@ -136,18 +132,15 @@ public class DailyReportJob : IJob
                                   $"|{new string('-', 7)}" +
                                   $"|{new string('-', 7)}|");
 
-        var previousDate = DateTime.Now.AddDays(-1).Date;
+        var yesterDay = DateTime.Now.AddDays(-1).Date;
 
         foreach (var challenger in activeChallengers)
         {
-            this.logger.LogInformation($"Previous day: {previousDate}");
-            this.logger.LogInformation($"Attempts for {challenger.LeetcodeUserName} are {string.Join(", ", challenger.DailyAttempts.Select(da => da.Date))}");
-
-            var previousDayAttempt = challenger
+            var yesterDayAttempt = challenger
                 .DailyAttempts
-                .FirstOrDefault(da => da.Date == previousDate);
+                .FirstOrDefault(da => da.Date == yesterDay);
 
-            if(previousDayAttempt is null)
+            if(yesterDayAttempt is null)
             {
                 this.logger.LogWarning($"Failed to get daily attempts for username: {challenger.LeetcodeUserName}");
                 continue;
@@ -156,7 +149,7 @@ public class DailyReportJob : IJob
             messageBuilder.AppendLine(String.Format("| {0, -20} | {1, -6}| {2, -6}| {3, -6}|",
                         challenger.LeetcodeUserName,
                         challenger.Heart,
-                        previousDayAttempt.SolvedProblems,
+                        yesterDayAttempt.SolvedProblems,
                         challenger.TotalSolvedProblems)); 
         }
 
