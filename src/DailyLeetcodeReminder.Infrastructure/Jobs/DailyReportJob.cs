@@ -136,15 +136,16 @@ public class DailyReportJob : IJob
                                   $"|{new string('-', 7)}" +
                                   $"|{new string('-', 7)}|");
 
+        var previousDate = DateTime.Now.AddDays(-1).Date;
+
         foreach (var challenger in activeChallengers)
         {
-            this.logger.LogInformation($"Previous day: {DateTime.Now.AddDays(-1).Date}");
+            this.logger.LogInformation($"Previous day: {previousDate}");
             this.logger.LogInformation($"Attempts for {challenger.LeetcodeUserName} are {string.Join(", ", challenger.DailyAttempts.Select(da => da.Date))}");
-
 
             var previousDayAttempt = challenger
                 .DailyAttempts
-                .FirstOrDefault(da => da.Date == DateTime.Now.AddDays(-1).Date);
+                .FirstOrDefault(da => da.Date == previousDate);
 
             if(previousDayAttempt is null)
             {

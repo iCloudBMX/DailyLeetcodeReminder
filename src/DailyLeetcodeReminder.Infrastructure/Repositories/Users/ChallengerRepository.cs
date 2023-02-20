@@ -111,7 +111,7 @@ public class ChallengerRepository : IChallengerRepository
             .Set<Challenger>()
             .Include(user => user.DailyAttempts
                 .Where(dailyAttempt => dailyAttempt.Date >= DateTime.Now.Date.AddDays(-8) &&
-                                       dailyAttempt.Date != DateTime.Now.Date))
+                    dailyAttempt.Date != DateTime.Now.Date))
             .Where(user => user.TelegramId == userId)
             .FirstAsync();
     }
