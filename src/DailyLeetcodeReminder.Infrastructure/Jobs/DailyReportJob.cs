@@ -132,10 +132,14 @@ public class DailyReportJob : IJob
 
         foreach (var challenger in activeChallengers)
         {
+            int? solvedProblems = challenger.DailyAttempts.Where(da => da.Date != DateTime.Now.Date)
+                            .FirstOrDefault().SolvedProblems;
+            if (solvedProblems == null)
+                continue;
             messageBuilder.AppendLine(String.Format("| {0, -20} | {1, -6}| {2, -6}| {3, -6}|",
                         challenger.LeetcodeUserName,
                         challenger.Heart,
-                        challenger.DailyAttempts.First().SolvedProblems,
+                        solvedProblems,
                         challenger.TotalSolvedProblems)); 
         }
 

@@ -82,6 +82,10 @@ public class UpdateHandler
 
     public async Task HandleCommandAsync(Message message)
     {
+        if (message is null)
+            return;
+        if (message.Text is null)
+            return;
         if (!message.Text.StartsWith("/"))
         {
             return;
@@ -96,7 +100,8 @@ public class UpdateHandler
                 "start" => HandleStartCommandAsync(message),
                 "register" => HandleRegisterCommandAsync(message),
                 "rank" => HandleRankCommandAsync(message),
-                "statistics" => CurrentUserStatisticAsync(message),
+                "statistics" => HandleStatisticsCommandAsync(message),
+                "weekly_report" => HandleWeeklyReportCommandAsync(message),
                 _ => HandleNotAvailableCommandAsync(message)
             }; ;
 
@@ -142,6 +147,32 @@ public class UpdateHandler
 
             return;
         }
+    }
+
+    private async Task HandleWeeklyReportCommandAsync(Message message)
+    {
+        if (message.Chat.Type != ChatType.Private)
+            return;
+
+        var challengers = await this.challengerService.
+                WeeklyUserAttempts(message.Chat.Id);
+
+        string status = challengers.Status == UserStatus.Active ? "Faol" : "Nofaol";
+        string week = string.Join("\n\n", challengers.DailyAttempts
+                    .Select(da =>
+                       "Sana: " + da.Date + "\n" +
+                       "Ishlangan misollar: " + da.SolvedProblems));
+
+        string sendText = challengers.FirstName + "\n"
+            + "Sizda qolgan imkoniyatlar: " + challengers.Heart + "\n"
+            + "Sizning ishlagan misollaringiz: " + challengers.TotalSolvedProblems
+            + "Sizning holatingiz: " + status + "\n\n"
+            + week;
+
+
+        await telegramBotClient.SendTextMessageAsync(
+            chatId: message.Chat.Id,
+            text: sendText);
     }
 
     private async Task HandleStartCommandAsync(Message message)
@@ -207,7 +238,7 @@ public class UpdateHandler
             parseMode: ParseMode.Html);
     }
 
-    private async Task CurrentUserStatisticAsync(Message message)
+    private async Task HandleStatisticsCommandAsync(Message message)
     {
         if (message.Chat.Type != ChatType.Private)
             return;
@@ -224,12 +255,12 @@ public class UpdateHandler
         }
 
         int totalProblemSolved = await challengerService.CurrentSolvedProblemsAsync(chellenger.LeetcodeUserName);
-        string staus = chellenger.Status == UserStatus.Active ? "Faol" : "Nofaol";
+        string status = chellenger.Status == UserStatus.Active ? "Faol" : "Nofaol";
         string UserText =
             "Sizning ishlagan misollaringiz: "
             + totalProblemSolved + "\n"
             + "Sizning holatingiz: "
-            + staus
+            + status
             + "\n"
             + "Sizda qolgan imkoniyatlar: "
             + chellenger.Heart;
