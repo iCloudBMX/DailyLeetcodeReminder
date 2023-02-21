@@ -161,15 +161,19 @@ public class UpdateHandler
         string status = challengers.Status == UserStatus.Active ? "Faol" : "Nofaol";
         string week = string.Join("\n\n", challengers.DailyAttempts
                     .Select(da =>
-                       "Sana: " + da.Date + "\n" +
-                       "Ishlangan misollar: " + da.SolvedProblems));
+                       "Sana: " + $"<b>{da.Date}</b>" + "\n" +
+                       "Ishlangan misollar: " + $"<b>{da.SolvedProblems}</b>"));
 
-        string sendText = challengers.FirstName + "\n"
-            + "Sizda qolgan imkoniyatlar: " + challengers.Heart + "\n"
-            + "Sizning ishlagan misollaringiz: " + challengers.TotalSolvedProblems + "\n"
-            + "Sizning holatingiz: " + status + "\n\n"
+        if (week.Length == 0)
+            week = "Ma'lumot mavjud emas.";
+
+        string sendText = $"<b>{challengers.FirstName}</b>" + "\n"
+            + "Sizda qolgan imkoniyatlar: " + $"<b>{challengers.Heart}</b>" + "\n"
+            + "Sizning ishlagan misollaringiz: " + $"<b>{challengers.TotalSolvedProblems}</b>" + "\n"
+            + "Sizning holatingiz: " + $"<b>{status}</b>" + "\n\n"
+            + "Haftalik hisobotlar\n\n"
             + week;
-
+        
 
         await telegramBotClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
@@ -265,12 +269,12 @@ public class UpdateHandler
         
         string sendText =
             "Sizning ishlagan misollaringiz: "
-            + totalProblemSolved + "\n"
+            + $"<b>{totalProblemSolved}</b>" + "\n"
             + "Sizning holatingiz: "
-            + status
+            + $"<b>{status}</b>"
             + "\n"
             + "Sizda qolgan imkoniyatlar: "
-            + chellenger.Heart;
+            + $"<b>{chellenger.Heart}</b>";
 
         await telegramBotClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
