@@ -166,7 +166,7 @@ public class UpdateHandler
 
         string sendText = challengers.FirstName + "\n"
             + "Sizda qolgan imkoniyatlar: " + challengers.Heart + "\n"
-            + "Sizning ishlagan misollaringiz: " + challengers.TotalSolvedProblems
+            + "Sizning ishlagan misollaringiz: " + challengers.TotalSolvedProblems + "\n"
             + "Sizning holatingiz: " + status + "\n\n"
             + week;
 
