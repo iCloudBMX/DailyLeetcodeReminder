@@ -1,7 +1,8 @@
 ﻿using DailyLeetcodeReminder.Domain.Entities;
 using DailyLeetcodeReminder.Domain.Enums;
+using DailyLeetcodeReminder.Infrastructure.Brokers.DateTimes;
+using DailyLeetcodeReminder.Infrastructure.Brokers.LeetCode;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
-using DailyLeetcodeReminder.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
 using Quartz;
 using System.Text;
@@ -16,23 +17,26 @@ public class DailyReportJob : IJob
     private readonly ITelegramBotClient telegramBotClient;
     private readonly ILeetCodeBroker leetcodeBroker;
     private readonly ILogger<DailyReportJob> logger;
+    private readonly IDateTimeBroker dateTimeBroker;
 
     public DailyReportJob(
         IChallengerRepository challengerRepository,
         ITelegramBotClient telegramBotClient,
         ILeetCodeBroker leetcodeBroker,
-        ILogger<DailyReportJob> logger)
+        ILogger<DailyReportJob> logger,
+        IDateTimeBroker dateTimeBroker)
     {
         this.challengerRepository = challengerRepository;
         this.telegramBotClient = telegramBotClient;
         this.leetcodeBroker = leetcodeBroker;
         this.logger = logger;
+        this.dateTimeBroker = dateTimeBroker;
     }
 
     public async Task Execute(IJobExecutionContext context)
     {
         long groupId = long.Parse(Environment.GetEnvironmentVariable("GROUP_ID"));
-        var today = DateTime.Now.Date;
+        var today = dateTimeBroker.GetCurrentDateTime().Date;
         var yesterday = today.AddDays(-1);
 
         List<Challenger> activeChallengers = await challengerRepository
@@ -45,22 +49,20 @@ public class DailyReportJob : IJob
 
             int yesterdayProblemsSolved = totalSolvedProblemsCount - activeChallenger.TotalSolvedProblems;
 
-            // if user hasn't solved any problem, decrease attempts count
-            if (yesterdayProblemsSolved == 0 && 
+            if (yesterdayProblemsSolved == 0 &&
                 activeChallenger.CreatedAt.Date < yesterday)
             {
                 activeChallenger.Heart--;
             }
 
-            // if attempts count <= 0 block the challenger
-            if(activeChallenger.Heart <= 0)
+            if (activeChallenger.Heart <= 0)
             {
                 activeChallenger.Status = UserStatus.Inactive;
 
                 var chatMember = await telegramBotClient
                     .GetChatMemberAsync(groupId, activeChallenger.TelegramId);
 
-                if(chatMember.Status is not ChatMemberStatus.Administrator and not ChatMemberStatus.Creator)
+                if (chatMember.Status is not ChatMemberStatus.Administrator and not ChatMemberStatus.Creator)
                 {
                     await telegramBotClient.BanChatMemberAsync(
                         chatId: groupId,
@@ -69,7 +71,6 @@ public class DailyReportJob : IJob
             }
             else
             {
-                // update total solved problems
                 activeChallenger.TotalSolvedProblems = totalSolvedProblemsCount;
             }
 
@@ -77,12 +78,12 @@ public class DailyReportJob : IJob
                 .DailyAttempts
                 .FirstOrDefault(da => da.Date == yesterday);
 
-            if(yesterdayAttempt is not null)
+            if (yesterdayAttempt is not null)
             {
                 yesterdayAttempt.SolvedProblems = yesterdayProblemsSolved;
             }
 
-            // initialize the next day attempts
+
             activeChallenger.DailyAttempts.Add(new DailyAttempt
             {
                 UserId = activeChallenger.TelegramId,
@@ -93,7 +94,6 @@ public class DailyReportJob : IJob
 
         await challengerRepository.SaveChangesAsync();
 
-        // send report to the group
         await SendDailyReportAsync(
             telegramBotClient,
             activeChallengers,
@@ -108,7 +108,7 @@ public class DailyReportJob : IJob
         string dailyReportDetails = GetDailyReportDetails(activeChallengers: activeChallengers);
 
         await telegramBotClient.SendTextMessageAsync(
-            chatId: groupId, 
+            chatId: groupId,
             text: dailyReportDetails,
             parseMode: ParseMode.Html);
     }
@@ -116,8 +116,9 @@ public class DailyReportJob : IJob
     private string GetDailyReportDetails(List<Challenger> activeChallengers)
     {
         StringBuilder messageBuilder = new();
+        DateTime currentDay = dateTimeBroker.GetCurrentDateTime();
 
-        messageBuilder.AppendLine($"Hisobot - <b>{DateTime.Now.ToString("dd.MM.yyyy")}</b>\n");
+        messageBuilder.AppendLine($"Hisobot - <b>{currentDay.ToString("dd.MM.yyyy")}</b>\n");
 
         messageBuilder.AppendLine($"<pre>|{new string('-', 22)}" +
                                        $"|{new string('-', 7)}" +
@@ -132,15 +133,15 @@ public class DailyReportJob : IJob
                                   $"|{new string('-', 7)}" +
                                   $"|{new string('-', 7)}|");
 
-        var yesterDay = DateTime.Now.AddDays(-1).Date;
+        var yesterday = currentDay.AddDays(-1).Date;
 
         foreach (var challenger in activeChallengers)
         {
-            var yesterDayAttempt = challenger
+            var yesterdayAttempt = challenger
                 .DailyAttempts
-                .FirstOrDefault(da => da.Date == yesterDay);
+                .FirstOrDefault(da => da.Date == yesterday);
 
-            if(yesterDayAttempt is null)
+            if (yesterdayAttempt is null)
             {
                 this.logger.LogWarning($"Failed to get daily attempts for username: {challenger.LeetcodeUserName}");
                 continue;
@@ -149,8 +150,8 @@ public class DailyReportJob : IJob
             messageBuilder.AppendLine(String.Format("| {0, -20} | {1, -6}| {2, -6}| {3, -6}|",
                         challenger.LeetcodeUserName,
                         challenger.Heart,
-                        yesterDayAttempt.SolvedProblems,
-                        challenger.TotalSolvedProblems)); 
+                        yesterdayAttempt.SolvedProblems,
+                        challenger.TotalSolvedProblems));
         }
 
         return messageBuilder.ToString() + "</pre>";
