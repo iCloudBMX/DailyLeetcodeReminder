@@ -161,7 +161,7 @@ public class UpdateHandler
         string status = challengers.Status == UserStatus.Active ? "Faol" : "Nofaol";
         string week = string.Join("\n\n", challengers.DailyAttempts
                     .Select(da =>
-                       "Sana: " + $"<b>{da.Date.Date}</b>" + "\n" +
+                       "Sana: " + $"<b>{da.Date.ToString("dd-mm-yyyy")}</b>" + "\n" +
                        "Ishlangan misollar: " + $"<b>{da.SolvedProblems}</b>"));
 
         if (week.Length == 0)
@@ -177,7 +177,8 @@ public class UpdateHandler
 
         await telegramBotClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
-            text: sendText);
+            text: sendText,
+            parseMode: ParseMode.Html);
     }
 
     private async Task HandleStartCommandAsync(Message message)
@@ -278,6 +279,7 @@ public class UpdateHandler
 
         await telegramBotClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
-            text: sendText);
+            text: sendText,
+            parseMode: ParseMode.Html);
     }
 }
