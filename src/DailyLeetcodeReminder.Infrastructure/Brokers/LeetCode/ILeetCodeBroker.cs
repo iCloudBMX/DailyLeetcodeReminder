@@ -1,6 +1,6 @@
 ﻿using DailyLeetcodeReminder.Infrastructure.Models;
 
-namespace DailyLeetcodeReminder.Infrastructure.Services;
+namespace DailyLeetcodeReminder.Infrastructure.Brokers.LeetCode;
 
 public interface ILeetCodeBroker
 {

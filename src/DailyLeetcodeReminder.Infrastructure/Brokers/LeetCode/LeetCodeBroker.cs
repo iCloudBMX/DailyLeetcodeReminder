@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace DailyLeetcodeReminder.Infrastructure.Services;
+namespace DailyLeetcodeReminder.Infrastructure.Brokers.LeetCode;
 
 public class LeetCodeBroker : ILeetCodeBroker
 {
@@ -18,7 +18,7 @@ public class LeetCodeBroker : ILeetCodeBroker
 
     public async Task<DailyProblem> GetDailyProblemAsync()
     {
-        using (var httpClient = this.httpClientFactory
+        using (var httpClient = httpClientFactory
             .CreateClient("leetcode"))
         {
             var graphqlRequest = new GraphQLRequest
@@ -55,7 +55,7 @@ public class LeetCodeBroker : ILeetCodeBroker
                 content: requestContent);
 
             var contentString = await response.Content.ReadAsStringAsync();
-            var jsonObject = JsonObject.Parse(contentString);
+            var jsonObject = JsonNode.Parse(contentString);
             var dailyProblem = new DailyProblem();
             MapToDailyProblem(jsonObject, dailyProblem);
             CheckLink(dailyProblem);
@@ -66,7 +66,7 @@ public class LeetCodeBroker : ILeetCodeBroker
 
     public async Task<int> GetTotalSolvedProblemsCountAsync(string leetcodeUsername)
     {
-        using (var httpClient = this.httpClientFactory
+        using (var httpClient = httpClientFactory
             .CreateClient("leetcode"))
         {
             var graphqlRequest = new GraphQLRequest
@@ -104,7 +104,7 @@ public class LeetCodeBroker : ILeetCodeBroker
                 content: requestContent);
 
             var contentString = await response.Content.ReadAsStringAsync();
-            var jsonObject = JsonObject.Parse(contentString);
+            var jsonObject = JsonNode.Parse(contentString);
 
             if (jsonObject?["errors"] is not null)
             {

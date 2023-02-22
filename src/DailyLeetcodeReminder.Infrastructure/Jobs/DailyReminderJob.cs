@@ -1,6 +1,7 @@
 ﻿using DailyLeetcodeReminder.Domain.Entities;
+using DailyLeetcodeReminder.Infrastructure.Brokers.DateTimes;
+using DailyLeetcodeReminder.Infrastructure.Brokers.LeetCode;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
-using DailyLeetcodeReminder.Infrastructure.Services;
 using Quartz;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
@@ -13,17 +14,20 @@ public class DailyReminderJob : IJob
     private readonly ILeetCodeBroker leetcodeBroker;
     private readonly ITelegramBotClient telegramBotClient;
     private readonly IAttemptRepository attemptRepository;
+    private readonly IDateTimeBroker dateTimeBroker;
 
     public DailyReminderJob(
         IChallengerRepository challengerRepository,
         ILeetCodeBroker leetcodeBroker,
         ITelegramBotClient telegramBotClient,
-        IAttemptRepository attemptRepository)
+        IAttemptRepository attemptRepository,
+        IDateTimeBroker dateTimeBroker)
     {
         this.challengerRepository = challengerRepository;
         this.leetcodeBroker = leetcodeBroker;
         this.telegramBotClient = telegramBotClient;
         this.attemptRepository = attemptRepository;
+        this.dateTimeBroker = dateTimeBroker;
     }
 
     public async Task Execute(IJobExecutionContext context)
@@ -57,7 +61,7 @@ public class DailyReminderJob : IJob
         }
 
         var endTime = DateTime.Today.AddDays(1);
-        var timeRemaining = endTime - DateTime.Now;
+        var timeRemaining = endTime - dateTimeBroker.GetCurrentDateTime();
 
         foreach (long telegramId in challengersHasNoAttempts)
         {

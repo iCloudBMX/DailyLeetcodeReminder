@@ -3,11 +3,12 @@ using DailyLeetcodeReminder.Core.Services;
 using DailyLeetcodeReminder.Infrastructure.Jobs;
 using DailyLeetcodeReminder.Infrastructure.Contexts;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
-using DailyLeetcodeReminder.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
 using Telegram.Bot;
 using Npgsql;
+using DailyLeetcodeReminder.Infrastructure.Brokers.LeetCode;
+using DailyLeetcodeReminder.Infrastructure.Brokers.DateTimes;
 
 namespace DailyLeetcodeReminder.Core.Extensions;
 
@@ -60,6 +61,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAttemptRepository, AttemptRepository>();
 
         services.AddTransient<ILeetCodeBroker, LeetCodeBroker>();
+        services.AddTransient<IDateTimeBroker, DateTimeBroker>();
 
         return services;
     }
