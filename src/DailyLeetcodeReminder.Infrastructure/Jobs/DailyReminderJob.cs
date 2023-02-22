@@ -1,6 +1,6 @@
 ﻿using DailyLeetcodeReminder.Domain.Entities;
+using DailyLeetcodeReminder.Infrastructure.Brokers.LeetCode;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
-using DailyLeetcodeReminder.Infrastructure.Services;
 using Quartz;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;

@@ -1,5 +1,5 @@
-﻿using DailyLeetcodeReminder.Infrastructure.Models;
-using DailyLeetcodeReminder.Infrastructure.Services;
+﻿using DailyLeetcodeReminder.Infrastructure.Brokers.LeetCode;
+using DailyLeetcodeReminder.Infrastructure.Models;
 using Quartz;
 using System.Text;
 using Telegram.Bot;

@@ -1,6 +1,6 @@
 ﻿using DailyLeetcodeReminder.Domain.Entities;
+using DailyLeetcodeReminder.Infrastructure.Brokers.LeetCode;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
-using DailyLeetcodeReminder.Infrastructure.Services;
 
 namespace DailyLeetcodeReminder.Application.Services;
 
@@ -35,7 +35,7 @@ public class ChallengerService : IChallengerService
         Challenger storageChallenger = await this.challengerRepository
             .SelectUserByTelegramIdAsync(telegramId);
 
-        if(storageChallenger is null)
+        if (storageChallenger is null)
         {
             throw new Exception("Challenger is not found");
         }
