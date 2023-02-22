@@ -161,7 +161,7 @@ public class UpdateHandler
         string status = challengers.Status == UserStatus.Active ? "Faol" : "Nofaol";
         string week = string.Join("\n\n", challengers.DailyAttempts
                     .Select(da =>
-                       "Sana: " + $"<b>{da.Date}</b>" + "\n" +
+                       "Sana: " + $"<b>{da.Date.Date}</b>" + "\n" +
                        "Ishlangan misollar: " + $"<b>{da.SolvedProblems}</b>"));
 
         if (week.Length == 0)
