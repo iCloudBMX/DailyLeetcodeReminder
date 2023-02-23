@@ -62,9 +62,9 @@ public class DailyReportJob : IJob
 
                 if(chatMember.Status is not ChatMemberStatus.Administrator and not ChatMemberStatus.Creator)
                 {
-                    await telegramBotClient.BanChatMemberAsync(
-                        chatId: groupId,
-                        userId: activeChallenger.TelegramId).ConfigureAwait(false);
+                    await RemoveMemberAsync(
+                        groupId,
+                        activeChallenger.TelegramId);
                 }
             }
             else
@@ -154,5 +154,19 @@ public class DailyReportJob : IJob
         }
 
         return messageBuilder.ToString() + "</pre>";
+    }
+
+    private async Task RemoveMemberAsync(
+        long groupId, 
+        long memberId)
+    {
+        await telegramBotClient.BanChatMemberAsync(
+            chatId: groupId,
+            userId: memberId).ConfigureAwait(false);
+
+        await telegramBotClient.SendTextMessageAsync(
+            chatId: memberId,
+            text: " Sizning imkoniyatlaringiz tugadi.\n" +
+            "Guruhdan chetlatildingiz!");
     }
 }
