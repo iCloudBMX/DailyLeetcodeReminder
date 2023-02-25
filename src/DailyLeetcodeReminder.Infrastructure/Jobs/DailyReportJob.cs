@@ -43,6 +43,12 @@ public class DailyReportJob : IJob
             var totalSolvedProblemsCount = await leetcodeBroker
                 .GetTotalSolvedProblemsCountAsync(activeChallenger.LeetcodeUserName);
 
+            if(totalSolvedProblemsCount == -1)
+            {
+                activeChallenger.Status = UserStatus.Inactive;
+                continue;
+            }
+
             int yesterdayProblemsSolved = totalSolvedProblemsCount - activeChallenger.TotalSolvedProblems;
 
             // if user hasn't solved any problem, decrease attempts count
