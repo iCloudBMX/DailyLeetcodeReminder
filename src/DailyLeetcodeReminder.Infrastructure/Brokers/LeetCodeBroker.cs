@@ -1,5 +1,5 @@
-﻿using DailyLeetcodeReminder.Domain.Exceptions;
-using DailyLeetcodeReminder.Infrastructure.Models;
+﻿using DailyLeetcodeReminder.Infrastructure.Models;
+using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -9,11 +9,14 @@ namespace DailyLeetcodeReminder.Infrastructure.Services;
 public class LeetCodeBroker : ILeetCodeBroker
 {
     private readonly IHttpClientFactory httpClientFactory;
+    private readonly ILogger<LeetCodeBroker> logger;
 
     public LeetCodeBroker(
-        IHttpClientFactory httpClientFactory)
+        IHttpClientFactory httpClientFactory,
+        ILogger<LeetCodeBroker> logger)
     {
         this.httpClientFactory = httpClientFactory;
+        this.logger = logger;
     }
 
     public async Task<DailyProblem> GetDailyProblemAsync()
@@ -108,7 +111,8 @@ public class LeetCodeBroker : ILeetCodeBroker
 
             if (jsonObject?["errors"] is not null)
             {
-                throw new NotFoundException(leetcodeUsername);
+                this.logger.LogError($"Leetcode username {leetcodeUsername} not found");
+                return -1;
             }
 
             int? totalSolvedProblemsCount = jsonObject?["data"]?["matchedUser"]?["submitStats"]["acSubmissionNum"]

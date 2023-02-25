@@ -39,6 +39,11 @@ public class DailyReminderJob : IJob
             int totalSolvedProblemsCount = await leetcodeBroker
                 .GetTotalSolvedProblemsCountAsync(challenger.LeetcodeUserName);
 
+            if(totalSolvedProblemsCount == -1)
+            {
+                continue;
+            }
+
             int todaySolvedProblems = totalSolvedProblemsCount - challenger.TotalSolvedProblems;
 
             if (todaySolvedProblems == 0)
