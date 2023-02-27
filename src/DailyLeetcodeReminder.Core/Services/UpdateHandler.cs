@@ -5,7 +5,7 @@ using DailyLeetcodeReminder.Domain.Exceptions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DailyLeetcodeReminder.Core.Services;
 
@@ -203,6 +203,8 @@ public class UpdateHandler
     {
         var leetCodeUsername = message.Text?.Split(' ').Skip(1).FirstOrDefault();
 
+        var groupLink = Environment.GetEnvironmentVariable("GROUP_LINK");
+
         if (string.IsNullOrWhiteSpace(leetCodeUsername))
         {
             await this.telegramBotClient.SendTextMessageAsync(
@@ -224,9 +226,13 @@ public class UpdateHandler
         Challenger insertedChallenger = await this.challengerService
             .AddUserAsync(challenger);
 
+        var button = InlineKeyboardButton.WithUrl("Guruhga qo'shilish", groupLink);
+        var keyboard = new InlineKeyboardMarkup(new[] { new[] { button } });
+
         await this.telegramBotClient.SendTextMessageAsync(
             chatId: insertedChallenger.TelegramId,
-            text: "Siz muvaffaqiyatli ro'yxatdan o'tdingiz");
+            text: "Siz muvaffaqiyatli ro'yxatdan o'tdingiz",
+            replyMarkup:keyboard);
     }
 
     private async Task HandleRankCommandAsync(Message message)
