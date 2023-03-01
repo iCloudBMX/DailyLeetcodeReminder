@@ -201,38 +201,47 @@ public class UpdateHandler
 
     private async Task HandleRegisterCommandAsync(Message message)
     {
-        var leetCodeUsername = message.Text?.Split(' ').Skip(1).FirstOrDefault();
+        try
+        {
+            var leetCodeUsername = message.Text?.Split(' ').Skip(1).FirstOrDefault();
 
-        var groupLink = Environment.GetEnvironmentVariable("GROUP_LINK");
+            var groupLink = Environment.GetEnvironmentVariable("GROUP_LINK");
 
-        if (string.IsNullOrWhiteSpace(leetCodeUsername))
+            if (string.IsNullOrWhiteSpace(leetCodeUsername))
+            {
+                await this.telegramBotClient.SendTextMessageAsync(
+                    chatId: message.From.Id,
+                    text: "Iltimos username ni ham kiriting.\n Misol uchun: /register myusername");
+
+                return;
+            }
+
+            var challenger = new Challenger
+            {
+                TelegramId = message.From.Id,
+                LeetcodeUserName = leetCodeUsername,
+                FirstName = message.From.FirstName,
+                LastName = message.From.LastName,
+                Status = UserStatus.Active,
+            };
+
+            Challenger insertedChallenger = await this.challengerService
+                .AddUserAsync(challenger);
+
+            var button = InlineKeyboardButton.WithUrl("Guruhga qo'shilish", groupLink);
+            var keyboard = new InlineKeyboardMarkup(new[] { new[] { button } });
+
+            await this.telegramBotClient.SendTextMessageAsync(
+                chatId: insertedChallenger.TelegramId,
+                text: "Siz muvaffaqiyatli ro'yxatdan o'tdingiz",
+                replyMarkup: keyboard);
+        }
+        catch(NotFoundException)
         {
             await this.telegramBotClient.SendTextMessageAsync(
                 chatId: message.From.Id,
-                text: "Iltimos username ni ham kiriting.\n Misol uchun: /register myusername");
-
-            return;
+                text: "Ushbu username leetcode platformasida mavjud emas");
         }
-
-        var challenger = new Challenger
-        {
-            TelegramId = message.From.Id,
-            LeetcodeUserName = leetCodeUsername,
-            FirstName = message.From.FirstName,
-            LastName = message.From.LastName,
-            Status = UserStatus.Active,
-        };
-
-        Challenger insertedChallenger = await this.challengerService
-            .AddUserAsync(challenger);
-
-        var button = InlineKeyboardButton.WithUrl("Guruhga qo'shilish", groupLink);
-        var keyboard = new InlineKeyboardMarkup(new[] { new[] { button } });
-
-        await this.telegramBotClient.SendTextMessageAsync(
-            chatId: insertedChallenger.TelegramId,
-            text: "Siz muvaffaqiyatli ro'yxatdan o'tdingiz",
-            replyMarkup:keyboard);
     }
 
     private async Task HandleRankCommandAsync(Message message)

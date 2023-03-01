@@ -1,4 +1,5 @@
 ﻿using DailyLeetcodeReminder.Domain.Entities;
+using DailyLeetcodeReminder.Domain.Exceptions;
 using DailyLeetcodeReminder.Infrastructure.Repositories;
 using DailyLeetcodeReminder.Infrastructure.Services;
 
@@ -22,8 +23,15 @@ public class ChallengerService : IChallengerService
     {
         challenger.Heart = maxAttempts;
 
-        challenger.TotalSolvedProblems = await leetcodeBroker
+        int totalSolvedProblems = await leetcodeBroker
             .GetTotalSolvedProblemsCountAsync(challenger.LeetcodeUserName);
+
+        if(totalSolvedProblems == -1)
+        {
+            throw new NotFoundException(challenger.LeetcodeUserName);
+        }
+
+        challenger.TotalSolvedProblems = totalSolvedProblems;
 
         Challenger insertedChallenger = await this.challengerRepository
             .InsertChallengerAsync(challenger);
