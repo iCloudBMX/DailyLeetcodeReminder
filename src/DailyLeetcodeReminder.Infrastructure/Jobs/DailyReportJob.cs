@@ -121,19 +121,21 @@ public class DailyReportJob : IJob
 
     private string GetDailyReportDetails(List<Challenger> activeChallengers)
     {
+        int mostLongestUsernameLength = activeChallengers.Max(chal => chal.LeetcodeUserName.Length);
+
         StringBuilder messageBuilder = new();
 
-        messageBuilder.AppendLine($"Hisobot - <b>{DateTime.Now.ToString("dd.MM.yyyy")}</b>\n");
+        messageBuilder.AppendLine($"Hisobot - <b>{DateTime.Now.ToString("dd.MM.yyyy")}</b>");
 
-        messageBuilder.AppendLine($"<pre>|{new string('-', 22)}" +
+        messageBuilder.AppendLine($"<pre>|{new string('-', (mostLongestUsernameLength + 2))}" +
                                        $"|{new string('-', 7)}" +
                                        $"|{new string('-', 7)}" +
                                        $"|{new string('-', 7)}|");
 
-        messageBuilder.AppendLine(String.Format("| {0, -20} | {1, -6}| {2, -6}| {3, -6}|",
+        messageBuilder.AppendLine(String.Format("| {0, -"+ mostLongestUsernameLength + "} | {1, -6}| {2, -6}| {3, -6}|",
                                                 "Foydalanuvchi nomi", "Yurak", "Bugun", "Jami"));
 
-        messageBuilder.AppendLine($"|{new string('-', 22)}" +
+        messageBuilder.AppendLine($"|{new string('-', (mostLongestUsernameLength + 2))}" +
                                   $"|{new string('-', 7)}" +
                                   $"|{new string('-', 7)}" +
                                   $"|{new string('-', 7)}|");
@@ -152,7 +154,7 @@ public class DailyReportJob : IJob
                 continue;
             }
 
-            messageBuilder.AppendLine(String.Format("| {0, -20} | {1, -6}| {2, -6}| {3, -6}|",
+            messageBuilder.AppendLine(String.Format("| {0, -"+ mostLongestUsernameLength + "} | {1, -6}| {2, -6}| {3, -6}|",
                         challenger.LeetcodeUserName,
                         challenger.Heart,
                         yesterDayAttempt.SolvedProblems,
