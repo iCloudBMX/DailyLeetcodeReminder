@@ -121,9 +121,10 @@ public class DailyReportJob : IJob
 
     private string GetDailyReportDetails(List<Challenger> activeChallengers)
     {
-        int mostLongestUsernameLength = activeChallengers.Max(chal => chal.LeetcodeUserName.Length);
-
         StringBuilder messageBuilder = new();
+
+        int mostLongestUsernameLength = activeChallengers
+            .Max(chal => chal.LeetcodeUserName.Length);
 
         messageBuilder.AppendLine($"Hisobot - <b>{DateTime.Now.ToString("dd.MM.yyyy")}</b>");
 
@@ -141,6 +142,10 @@ public class DailyReportJob : IJob
                                   $"|{new string('-', 7)}|");
 
         var yesterDay = DateTime.Now.AddDays(-1).Date;
+
+        activeChallengers = activeChallengers
+            .OrderByDescending(chal => chal.TotalSolvedProblems)
+            .ToList();
 
         foreach (var challenger in activeChallengers)
         {
